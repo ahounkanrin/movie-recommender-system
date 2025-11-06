@@ -10,7 +10,7 @@ def parse_data(data):
     movie_counter = 0
     num_users = data["userId"].n_unique()
     num_movies = data["movieId"].n_unique()
-
+    
     user_id_to_index = {}
     index_to_user_id = []
     data_by_user = [[] for i in range(num_users)]
@@ -19,10 +19,8 @@ def parse_data(data):
     index_to_movie_id = []
     data_by_movie = [[] for i in range(num_movies)]
 
-    for i in tqdm(range(len(data))):
-        user_id, movie_id, rating, _ = data[i]
-        user_id, movie_id, rating = user_id.item(), movie_id.item(), rating.item()
-        
+    for user_id, movie_id, rating, _ in tqdm(data.iter_rows()):
+
         if user_id not in user_id_to_index.keys():
             user_id_to_index[user_id] = user_counter
             index_to_user_id.append(user_id)
@@ -49,7 +47,6 @@ def plot_rating_distribution(data_by_user, data_by_movie):
     user_degree, user_degree_frequency = np.unique(user_degree_list, return_counts=True)
     movie_degree, movie_degree_frequency = np.unique(movie_degree_list, return_counts=True)
 
-    
     plt.scatter(movie_degree, movie_degree_frequency, label="movies", s=10, color="b")
     plt.scatter(user_degree, user_degree_frequency, label="users", marker='D', s=10, color="m")
     plt.xscale("log")
@@ -57,8 +54,9 @@ def plot_rating_distribution(data_by_user, data_by_movie):
     plt.xlabel("Degree")
     plt.ylabel("Frequency")
     plt.legend()
-    plt.savefig("./outputs/ratings_distribution.pdf")
-    
+    plt.savefig("./outputs/plots/ratings_distribution.pdf")
+
+
 if __name__ == "__main__":
 
     DATA_DIR = "./data/ml-32m"
