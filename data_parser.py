@@ -1,13 +1,15 @@
 import os
 import numpy as np
 import polars as pl
+import random
 
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
+
+random.seed(42)
+
 def parse_data(data):
-    user_counter = 0
-    movie_counter = 0
     num_users = data["userId"].n_unique()
     num_movies = data["movieId"].n_unique()
     
@@ -19,7 +21,9 @@ def parse_data(data):
     index_to_movie_id = []
     data_by_movie = [[] for i in range(num_movies)]
 
-    for user_id, movie_id, rating, _ in tqdm(data.iter_rows()):
+    user_counter = 0
+    movie_counter = 0
+    for user_id, movie_id, rating, _ in tqdm(data.iter_rows(), desc="Data parsing"):
 
         if user_id not in user_id_to_index.keys():
             user_id_to_index[user_id] = user_counter
@@ -40,6 +44,20 @@ def parse_data(data):
     return data_by_user, data_by_movie, index_to_user_id, index_to_movie_id
 
 
+def random_split(data):
+    data_train = [[] for i in range(len(data))]
+    data_test = [[] for i in range(len(data))]
+
+    for i in tqdm(range(len(data)), desc="Train-test split"):
+        for j in range(len(data[i])):
+            u = random.uniform(0, 1)
+            if u <= 0.9:
+                data_train[i].append(data[i][j])
+            else:
+                data_test[i].append(data[i][j])      
+    return data_train, data_test
+
+
 def plot_rating_distribution(data_by_user, data_by_movie):
     user_degree_list = np.array([len(x) for x in data_by_user])
     movie_degree_list = np.array([len(x) for x in data_by_movie])
@@ -54,15 +72,24 @@ def plot_rating_distribution(data_by_user, data_by_movie):
     plt.xlabel("Degree")
     plt.ylabel("Frequency")
     plt.legend()
-    plt.savefig("./outputs/plots/ratings_distribution.pdf")
+    plt.savefig("./outputs/plots/test_ratings_distribution_small.pdf")
 
 
 if __name__ == "__main__":
 
-    DATA_DIR = "./data/ml-32m"
+    DATA_DIR = "./data/ml-latest-small"
     data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
-    # data_subset_size = 10000000
-    # data = data[:data_subset_size]
-
+    # data = data.sort("timestamp")
+    # sample_size = 10000000
+    # data = data[:sample_size]
+    
     data_by_user, data_by_movie, index_to_user_id, index_to_movie_id = parse_data(data)
-    plot_rating_distribution(data_by_user, data_by_movie)
+    # plot_rating_distribution(data_by_user, data_by_movie)
+
+    # data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test, _, _ = parse_and_random_split(data)
+
+    data_by_user_train, data_by_user_test = random_split(data_by_user)
+    data_by_movie_train, data_by_movie_test = random_split(data_by_movie)
+
+    # plot_rating_distribution(data_by_user_train, data_by_movie_train)
+    plot_rating_distribution(data_by_user_test, data_by_movie_test)
