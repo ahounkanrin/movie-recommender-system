@@ -75,6 +75,42 @@ def plot_rating_distribution(data_by_user, data_by_movie):
     plt.savefig("./outputs/plots/test_ratings_distribution_small.pdf")
 
 
+def flatten_user_data(data):
+    user_index_offsets = [0]
+    movie_indexes = []
+    user_indexes = []
+    ratings = []
+    
+    offset = 0
+    for i in tqdm(range(len(data)), desc="Flatten user data"):
+        for j in range(len(data[i])):
+            user_indexes.append(i)
+            movie_indexes.append(data[i][j][0])
+            ratings.append(data[i][j][1])
+
+        offset += len(data[i])
+        user_index_offsets.append(offset)
+
+    return np.array(user_index_offsets), np.array(user_indexes) ,np.array(movie_indexes), np.array(ratings)
+
+def flatten_movie_data(data):
+    movie_index_offsets = [0]
+    movie_indexes = []
+    user_indexes = []
+    ratings = []
+    
+    offset = 0
+    for i in tqdm(range(len(data)), desc="Flatten movie data"):
+        for j in range(len(data[i])):
+            movie_indexes.append(i)
+            user_indexes.append(data[i][j][0])
+            ratings.append(data[i][j][1])
+        
+        offset += len(data[i])
+        movie_index_offsets.append(offset)
+
+    return np.array(movie_index_offsets), np.array(user_indexes) ,np.array(movie_indexes), np.array(ratings)
+
 if __name__ == "__main__":
 
     DATA_DIR = "./data/ml-latest-small"

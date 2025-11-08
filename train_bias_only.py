@@ -8,8 +8,8 @@ from matplotlib import pyplot as plt
 
 
 # DATA_DIR = "./data/ml-latest-small"
-DATA_DIR = "./data/ml-25m"
-# DATA_DIR = "./data/ml-32m"
+# DATA_DIR = "./data/ml-25m"
+DATA_DIR = "./data/ml-32m"
 data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
 # data = data.sort("timestamp")
 
@@ -32,7 +32,7 @@ test_losses = []
 train_errors = []
 test_errors = []
 
-for epoch in range(num_epochs):
+for epoch in tqdm(range(num_epochs), desc="Training"):
     # update user biases
     for m in range(num_users):
         bias = 0
@@ -95,7 +95,7 @@ ax[1].plot(test_losses, label="Test", color="r")
 ax[0].legend()
 ax[1].legend()
 fig.suptitle("Negative log likelihood")
-plt.savefig("./outputs/plots/bias_only_model_nll_25M.pdf")
+plt.savefig("./outputs/plots/bias_only_model_nll_32M.pdf")
 plt.close()
 
 fig, ax = plt.subplots(2, 1)
@@ -104,4 +104,4 @@ ax[1].plot(test_errors, label="Test", color="r")
 ax[0].legend()
 ax[1].legend()
 plt.suptitle("RMSE")
-plt.savefig("./outputs/plots/bias_only_model_rmse_25M.pdf")
+plt.savefig("./outputs/plots/bias_only_model_rmse_32M.pdf")
