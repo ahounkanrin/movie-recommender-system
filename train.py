@@ -45,7 +45,8 @@ for epoch in range(num_epochs):
         bias = 0
         movie_counter = 0
         for (n, r) in data_by_user_train[m]:
-            bias += lambda_ * (r - movie_biases[n])
+            bias += lambda_ * (r - movie_biases[n]\
+                               - np.dot(user_embeddings[m], movie_embeddings[n]))
             movie_counter += 1
         bias /= (lambda_ * movie_counter + gamma_)
         user_biases[m] = bias
@@ -66,7 +67,8 @@ for epoch in range(num_epochs):
         bias = 0
         user_counter = 0
         for (m, r)  in data_by_movie_train[n]:
-            bias += lambda_ * (r - user_biases[m])
+            bias += lambda_ * (r - user_biases[m]\
+                               - np.dot(user_embeddings[m], movie_embeddings[n]))
             user_counter += 1
         bias /= (lambda_ * user_counter + gamma_)
         movie_biases[n] = bias

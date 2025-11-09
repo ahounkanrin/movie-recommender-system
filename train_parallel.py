@@ -45,28 +45,29 @@ def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_trai
             for i in range(start_idx, end_idx):
                 n = data_by_user_movie_indexes_train[i]
                 r = data_by_user_ratings_train[i]
-                bias += lambda_ * (r - movie_biases[n])
+                bias += lambda_ * (r - movie_biases[n]\
+                                   - np.dot(user_embeddings[m], movie_embeddings[n]))
                 movie_counter += 1
             bias /= (lambda_ * movie_counter + gamma_)
             user_biases[m] = bias
 
             # update user vectors
-            user_mat_factor = np.zeros(shape=(embedding_dim, embedding_dim))
-            user_vec_factor = np.zeros(shape=(embedding_dim))
+            A = np.zeros(shape=(embedding_dim, embedding_dim))
+            b = np.zeros(shape=(embedding_dim))
 
             for i in range(start_idx, end_idx):
                 n = data_by_user_movie_indexes_train[i]
                 r = data_by_user_ratings_train[i]
-                movie_vector = movie_embeddings[n]
+                # movie_vector = movie_embeddings[n]
 
-                user_mat_factor += np.outer(movie_vector, movie_vector)
-                user_vec_factor += lambda_ * (r - user_biases[m] - movie_biases[n]) * movie_vector
+                A += np.outer(movie_embeddings[n], movie_embeddings[n])
+                b += lambda_ * (r - user_biases[m] - movie_biases[n]) * movie_embeddings[n]
             
-            user_mat_factor = lambda_ * user_mat_factor + tau_ * I
-            # user_mat_factor = np.linalg.solve(user_mat_factor, I)
+            A = lambda_ * A + tau_ * I
+            # A = np.linalg.solve(A, I)
             
-            # user_embeddings[m] = user_mat_factor @ user_vec_factor
-            user_embeddings[m] = np.linalg.solve(user_mat_factor, user_vec_factor)
+            # user_embeddings[m] = A @ b
+            user_embeddings[m] = np.linalg.solve(A, b)
 
         for n in prange(num_movies):
             # update movie biases
@@ -77,28 +78,29 @@ def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_trai
             for i in range(start_idx, end_idx):
                     m = data_by_movie_user_indexes_train[i]
                     r = data_by_movie_ratings_train[i]
-                    bias += lambda_ * (r - user_biases[m])
+                    bias += lambda_ * (r - user_biases[m]\
+                                       - np.dot(user_embeddings[m], movie_embeddings[n]))
                     user_counter += 1
             bias /= (lambda_ * user_counter + gamma_)
             movie_biases[n] = bias
 
             # update movie vectors
-            movie_mat_factor = np.zeros(shape=(embedding_dim, embedding_dim))
-            movie_vec_factor = np.zeros(shape=(embedding_dim))
+            A = np.zeros(shape=(embedding_dim, embedding_dim))
+            b = np.zeros(shape=(embedding_dim))
 
             for i in range(start_idx, end_idx):
                 m = data_by_movie_user_indexes_train[i]
                 r = data_by_movie_ratings_train[i]
-                user_vector = user_embeddings[m]
+                # user_vector = user_embeddings[m]
 
-                movie_mat_factor += np.outer(user_vector, user_vector)
-                movie_vec_factor += lambda_ * (r - user_biases[m] - movie_biases[n]) * user_vector
+                A += np.outer(user_embeddings[m], user_embeddings[m])
+                b += lambda_ * (r - user_biases[m] - movie_biases[n]) * user_embeddings[m]
             
-            movie_mat_factor = lambda_ * movie_mat_factor + tau_ * I
-            # movie_mat_factor = np.linalg.solve(movie_mat_factor, I)
+            A = lambda_ * A + tau_ * I
+            # A = np.linalg.solve(A, I)
             
-            # movie_embeddings[n] = movie_mat_factor @ movie_vec_factor
-            movie_embeddings[n] = np.linalg.solve(movie_mat_factor, movie_vec_factor)
+            # movie_embeddings[n] = A @ b
+            movie_embeddings[n] = np.linalg.solve(A, b)
 
         # compute train loss
         loss_train = 0
@@ -107,17 +109,17 @@ def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_trai
         for m in prange(num_users):
             start_idx = data_by_user_user_index_offsets_train[m]
             end_idx = data_by_user_user_index_offsets_train[m+1]
-            user_vector = user_embeddings[m]
+            # user_vector = user_embeddings[m]
 
             for i in range(start_idx, end_idx):
                 n = data_by_user_movie_indexes_train[i]
                 r = data_by_user_ratings_train[i]
-                movie_vector = movie_embeddings[n]
+                # movie_vector = movie_embeddings[n]
 
                 loss_train += (lambda_/2) * (r - user_biases[m] - movie_biases[n]
-                                             - user_vector @ movie_vector)**2
+                                             - np.dot(user_embeddings[m], movie_embeddings[n]))**2
                 rmse_train += (r - user_biases[m] - movie_biases[n]
-                               - user_vector @ movie_vector)**2
+                               - np.dot(user_embeddings[m], movie_embeddings[n]))**2
                 rating_counter_train += 1
         
         loss_train += (gamma_/2) * (np.sum(user_biases**2) + np.sum(movie_biases**2))
@@ -131,17 +133,17 @@ def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_trai
         for m in prange(num_users):
             start_idx = data_by_user_user_index_offsets_test[m]
             end_idx = data_by_user_user_index_offsets_test[m+1]
-            user_vector = user_embeddings[m]
+            # user_vector = user_embeddings[m]
 
             for i in range(start_idx, end_idx):
                 n = data_by_user_movie_indexes_test[i]
                 r = data_by_user_ratings_test[i]
-                movie_vector = movie_embeddings[n]
+                # movie_vector = movie_embeddings[n]
 
                 loss_test += (lambda_/2) * (r - user_biases[m] - movie_biases[n]
-                                            - user_vector @ movie_vector)**2
+                                            - np.dot(user_embeddings[m], movie_embeddings[n]))**2
                 rmse_test += (r - user_biases[m] - movie_biases[n]
-                              - user_vector @ movie_vector)**2
+                              - np.dot(user_embeddings[m], movie_embeddings[n]))**2
                 rating_counter_test += 1
         
         loss_test += (gamma_/2) * (np.sum(user_biases**2) + np.sum(movie_biases**2))
