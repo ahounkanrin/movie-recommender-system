@@ -2,27 +2,28 @@ import numpy as np
 import polars as pl
 import os
 
-from data_parser import parse_data, random_split
+from data_parser import parse_data, random_split, chrono_split
 from tqdm import tqdm
 from matplotlib import pyplot as plt
 
 
-lambda_ = 0.1
-gamma_ = 0.1
-tau_ = 0.1
+lambda_ = 0.01
+gamma_ = 0.01
+tau_ = 0.2
 num_epochs = 10
 embedding_dim = 32
 
 I = np.eye(embedding_dim)
 
-# DATA_DIR = "./data/ml-latest-small"
-DATA_DIR = "./data/ml-25m"
+DATA_DIR = "./data/ml-latest-small"
+# DATA_DIR = "./data/ml-25m"
 # DATA_DIR = "./data/ml-32m"
 data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
-# data = data.sort("timestamp")
+data = data.sort("timestamp")
 
 data_by_user, data_by_movie, index_to_user_id, index_to_movie_id = parse_data(data)
-data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
+# data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
+data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = chrono_split(data_by_user, data_by_movie)
 
 num_users = len(data_by_user)
 num_movies = len(data_by_movie)
@@ -133,7 +134,7 @@ ax[1].legend()
 fig.suptitle("Negative log likelihood")
 ax[0].grid(True)
 ax[1].grid(True)
-plt.savefig("./outputs/plots/bias_and_embedding_model_nll_25M.pdf")
+plt.savefig("./outputs/plots/bias_and_embedding_model_nll_small.pdf")
 plt.close()
 
 fig, ax = plt.subplots(1, 1)
@@ -143,5 +144,5 @@ ax.legend()
 ax.legend()
 plt.suptitle("RMSE")
 ax.grid(True)
-plt.savefig("./outputs/plots/bias_and_embeddding_model_rmse_25M.pdf")
+plt.savefig("./outputs/plots/bias_and_embeddding_model_rmse_small.pdf")
 plt.close()

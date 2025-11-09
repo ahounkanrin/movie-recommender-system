@@ -3,7 +3,8 @@ import polars as pl
 import os
 import random
 
-from data_parser import parse_data, random_split, flatten_user_data, flatten_movie_data
+from data_parser import (parse_data, random_split, chrono_split,
+                         flatten_user_data, flatten_movie_data)
 from matplotlib import pyplot as plt
 from numba import jit, prange, set_num_threads
 
@@ -13,7 +14,7 @@ lambda_ = 0.1
 gamma_ = 0.1
 tau_ = 0.1
 num_epochs = 10
-embedding_dim = 32
+embedding_dim = 16
 
 I = np.eye(embedding_dim)
 
@@ -173,7 +174,7 @@ def plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)
     fig.suptitle("Negative log likelihood")
     ax[0].grid(True)
     ax[1].grid(True)
-    plt.savefig("./outputs/plots/bias_and_embedding_model_nll_25M.pdf")
+    plt.savefig("./outputs/plots/bias_and_embedding_model_nll_32M.pdf")
     plt.close()
 
     fig, ax = plt.subplots(1, 1)
@@ -183,18 +184,20 @@ def plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)
     ax.legend()
     plt.suptitle("RMSE")
     ax.grid(True)
-    plt.savefig("./outputs/plots/bias_and_embeddding_model_rmse_25M.pdf")
+    plt.savefig("./outputs/plots/bias_and_embeddding_model_rmse_32M.pdf")
     plt.close()
 
 if __name__ == "__main__":
     # DATA_DIR = "./data/ml-latest-small"
-    DATA_DIR = "./data/ml-25m"
-    # DATA_DIR = "./data/ml-32m"
+    # DATA_DIR = "./data/ml-25m"
+    DATA_DIR = "./data/ml-32m"
     data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
-    # data = data.sort("timestamp")
+    data = data.sort("timestamp")
 
     data_by_user, data_by_movie, index_to_user_id, index_to_movie_id = parse_data(data)
-    data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
+    # data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
+    data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = chrono_split(data_by_user, data_by_movie)
+
 
     data_by_user_user_index_offsets_train, data_by_user_movie_indexes_train, data_by_user_ratings_train = flatten_user_data(data_by_user_train)
     data_by_user_user_index_offsets_test, data_by_user_movie_indexes_test, data_by_user_ratings_test = flatten_user_data(data_by_user_test)
