@@ -44,18 +44,26 @@ def parse_data(data):
     return data_by_user, data_by_movie, index_to_user_id, index_to_movie_id
 
 
-def random_split(data):
-    data_train = [[] for i in range(len(data))]
-    data_test = [[] for i in range(len(data))]
+def random_split(data_by_user, data_by_movie):
+    data_by_user_train = [[] for i in range(len(data_by_user))]
+    data_by_user_test = [[] for i in range(len(data_by_user))]
+    data_by_movie_train = [[] for i in range(len(data_by_movie))]
+    data_by_movie_test = [[] for i in range(len(data_by_movie))]
 
-    for i in tqdm(range(len(data)), desc="Train-test split"):
-        for j in range(len(data[i])):
+    for i in tqdm(range(len(data_by_user)), desc="Train-test split"):
+        for j in range(len(data_by_user[i])):
+            movie_index = data_by_user[i][j][0]
+            rating = data_by_user[i][j][1]
+
             u = random.uniform(0, 1)
             if u <= 0.9:
-                data_train[i].append(data[i][j])
+                data_by_user_train[i].append(data_by_user[i][j])
+                data_by_movie_train[movie_index].append((i, rating))
             else:
-                data_test[i].append(data[i][j])      
-    return data_train, data_test
+                data_by_user_test[i].append(data_by_user[i][j])
+                data_by_movie_test[movie_index].append((i, rating))      
+    
+    return data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test
 
 
 def plot_rating_distribution(data_by_user, data_by_movie):
@@ -91,7 +99,7 @@ def flatten_user_data(data):
         offset += len(data[i])
         user_index_offsets.append(offset)
 
-    return np.array(user_index_offsets), np.array(user_indexes) ,np.array(movie_indexes), np.array(ratings)
+    return np.array(user_index_offsets), np.array(movie_indexes), np.array(ratings)
 
 def flatten_movie_data(data):
     movie_index_offsets = [0]
@@ -109,7 +117,7 @@ def flatten_movie_data(data):
         offset += len(data[i])
         movie_index_offsets.append(offset)
 
-    return np.array(movie_index_offsets), np.array(user_indexes) ,np.array(movie_indexes), np.array(ratings)
+    return np.array(movie_index_offsets), np.array(user_indexes), np.array(ratings)
 
 if __name__ == "__main__":
 

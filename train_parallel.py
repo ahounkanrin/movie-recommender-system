@@ -1,31 +1,43 @@
 import numpy as np
 import polars as pl
 import os
+import random
 
 from data_parser import parse_data, random_split, flatten_user_data, flatten_movie_data
 from matplotlib import pyplot as plt
-from numba import jit
+from numba import jit, prange, set_num_threads
+
+random.seed(42)
+
+lambda_ = 0.1
+gamma_ = 0.1
+tau_ = 0.1
+num_epochs = 10
+embedding_dim = 32
+
+I = np.eye(embedding_dim)
 
 @jit(parallel=True)
 def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_train, data_by_user_ratings_train,
             data_by_user_user_index_offsets_test, data_by_user_movie_indexes_test, data_by_user_ratings_test,
             data_by_movie_movie_index_offsets_train, data_by_movie_user_indexes_train, data_by_movie_ratings_train,
-            num_users, num_movies):
+            num_users, num_movies, ):
     
     user_biases = np.zeros(shape=(num_users))
     movie_biases = np.zeros(shape=(num_movies))
-    lambda_ = 0.1
-    gamma_ = 0.01
-    num_epochs = 10
 
+    user_embeddings = np.random.normal(loc=0, scale=np.sqrt(1/embedding_dim), size=(num_users, embedding_dim))
+    movie_embeddings = np.random.normal(loc=0, scale=np.sqrt(1/embedding_dim), size=(num_movies, embedding_dim))
+ 
     train_losses = np.zeros(shape=(num_epochs)) 
     test_losses = np.zeros(shape=(num_epochs))
     train_errors = np.zeros(shape=(num_epochs))
     test_errors = np.zeros(shape=(num_epochs))
 
     for epoch in range(num_epochs):
-        # update user biases
-        for m in range(num_users):
+        
+        for m in prange(num_users):
+            # update user biases
             bias = 0
             movie_counter = 0
             start_idx = data_by_user_user_index_offsets_train[m]
@@ -38,8 +50,26 @@ def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_trai
             bias /= (lambda_ * movie_counter + gamma_)
             user_biases[m] = bias
 
-        # update movie biases
-        for n in range(num_movies):
+            # update user vectors
+            user_mat_factor = np.zeros(shape=(embedding_dim, embedding_dim))
+            user_vec_factor = np.zeros(shape=(embedding_dim))
+
+            for i in range(start_idx, end_idx):
+                n = data_by_user_movie_indexes_train[i]
+                r = data_by_user_ratings_train[i]
+                movie_vector = movie_embeddings[n]
+
+                user_mat_factor += np.outer(movie_vector, movie_vector)
+                user_vec_factor += lambda_ * (r - user_biases[m] - movie_biases[n]) * movie_vector
+            
+            user_mat_factor = lambda_ * user_mat_factor + tau_ * I
+            # user_mat_factor = np.linalg.solve(user_mat_factor, I)
+            
+            # user_embeddings[m] = user_mat_factor @ user_vec_factor
+            user_embeddings[m] = np.linalg.solve(user_mat_factor, user_vec_factor)
+
+        for n in prange(num_movies):
+            # update movie biases
             bias = 0
             user_counter = 0
             start_idx = data_by_movie_movie_index_offsets_train[n]
@@ -52,39 +82,72 @@ def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_trai
             bias /= (lambda_ * user_counter + gamma_)
             movie_biases[n] = bias
 
+            # update movie vectors
+            movie_mat_factor = np.zeros(shape=(embedding_dim, embedding_dim))
+            movie_vec_factor = np.zeros(shape=(embedding_dim))
+
+            for i in range(start_idx, end_idx):
+                m = data_by_movie_user_indexes_train[i]
+                r = data_by_movie_ratings_train[i]
+                user_vector = user_embeddings[m]
+
+                movie_mat_factor += np.outer(user_vector, user_vector)
+                movie_vec_factor += lambda_ * (r - user_biases[m] - movie_biases[n]) * user_vector
+            
+            movie_mat_factor = lambda_ * movie_mat_factor + tau_ * I
+            # movie_mat_factor = np.linalg.solve(movie_mat_factor, I)
+            
+            # movie_embeddings[n] = movie_mat_factor @ movie_vec_factor
+            movie_embeddings[n] = np.linalg.solve(movie_mat_factor, movie_vec_factor)
+
         # compute train loss
         loss_train = 0
         rmse_train = 0
         rating_counter_train = 0
-        for m in range(num_users):
+        for m in prange(num_users):
             start_idx = data_by_user_user_index_offsets_train[m]
             end_idx = data_by_user_user_index_offsets_train[m+1]
+            user_vector = user_embeddings[m]
+
             for i in range(start_idx, end_idx):
                 n = data_by_user_movie_indexes_train[i]
                 r = data_by_user_ratings_train[i]
-                loss_train += (lambda_/2) * (r - user_biases[m] - movie_biases[n])**2
-                rmse_train += (r - user_biases[m] - movie_biases[n])**2
+                movie_vector = movie_embeddings[n]
+
+                loss_train += (lambda_/2) * (r - user_biases[m] - movie_biases[n]
+                                             - user_vector @ movie_vector)**2
+                rmse_train += (r - user_biases[m] - movie_biases[n]
+                               - user_vector @ movie_vector)**2
                 rating_counter_train += 1
         
         loss_train += (gamma_/2) * (np.sum(user_biases**2) + np.sum(movie_biases**2))
+        loss_train += (tau_/2) * (np.linalg.norm(user_embeddings)**2 + np.linalg.norm(movie_embeddings)**2)
         rmse_train = np.sqrt(rmse_train/rating_counter_train)
 
         # compute test loss
         loss_test = 0
         rating_counter_test = 0
         rmse_test = 0
-        for m in range(num_users):
+        for m in prange(num_users):
             start_idx = data_by_user_user_index_offsets_test[m]
             end_idx = data_by_user_user_index_offsets_test[m+1]
+            user_vector = user_embeddings[m]
+
             for i in range(start_idx, end_idx):
                 n = data_by_user_movie_indexes_test[i]
                 r = data_by_user_ratings_test[i]
-                loss_test += (lambda_/2) * (r - user_biases[m] - movie_biases[n])**2
-                rmse_test += (r - user_biases[m] - movie_biases[n])**2
+                movie_vector = movie_embeddings[n]
+
+                loss_test += (lambda_/2) * (r - user_biases[m] - movie_biases[n]
+                                            - user_vector @ movie_vector)**2
+                rmse_test += (r - user_biases[m] - movie_biases[n]
+                              - user_vector @ movie_vector)**2
                 rating_counter_test += 1
         
         loss_test += (gamma_/2) * (np.sum(user_biases**2) + np.sum(movie_biases**2))
+        loss_test += (tau_/2) * (np.linalg.norm(user_embeddings)**2 + np.linalg.norm(movie_embeddings)**2)
         rmse_test = np.sqrt(rmse_test/rating_counter_test)
+
         
         train_losses[epoch] = loss_train
         test_losses[epoch] = loss_test
@@ -106,21 +169,25 @@ def plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)
     ax[0].legend()
     ax[1].legend()
     fig.suptitle("Negative log likelihood")
-    plt.savefig("./outputs/plots/bias_only_model_nll_32M.pdf")
+    ax[0].grid(True)
+    ax[1].grid(True)
+    plt.savefig("./outputs/plots/bias_and_embedding_model_nll_25M.pdf")
     plt.close()
 
-    fig, ax = plt.subplots(2, 1)
-    ax[0].plot(train_errors, label="Train", color="b")
-    ax[1].plot(test_errors, label="Test", color="r")
-    ax[0].legend()
-    ax[1].legend()
+    fig, ax = plt.subplots(1, 1)
+    ax.plot(train_errors, label="Train", color="b")
+    ax.plot(test_errors, label="Test", color="r")
+    ax.legend()
+    ax.legend()
     plt.suptitle("RMSE")
-    plt.savefig("./outputs/plots/bias_only_model_rmse_32M.pdf")
+    ax.grid(True)
+    plt.savefig("./outputs/plots/bias_and_embeddding_model_rmse_25M.pdf")
+    plt.close()
 
 if __name__ == "__main__":
     # DATA_DIR = "./data/ml-latest-small"
-    # DATA_DIR = "./data/ml-25m"
-    DATA_DIR = "./data/ml-32m"
+    DATA_DIR = "./data/ml-25m"
+    # DATA_DIR = "./data/ml-32m"
     data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
     # data = data.sort("timestamp")
 
@@ -133,10 +200,12 @@ if __name__ == "__main__":
     
     num_users = len(data_by_user)
     num_movies = len(data_by_movie)
-
+ 
     train_losses, test_losses, train_errors, test_errors =  train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_train, data_by_user_ratings_train,
                                                             data_by_user_user_index_offsets_test, data_by_user_movie_indexes_test, data_by_user_ratings_test,
                                                             data_by_movie_movie_index_offsets_train, data_by_movie_user_indexes_train, data_by_movie_ratings_train,
                                                             num_users, num_movies)
     
     plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)
+
+    # set_num_threads(1)
