@@ -7,10 +7,10 @@ from matplotlib import pyplot as plt
 from numba import jit
 
 @jit(parallel=True)
-def train(data_by_user_user_index_offsets_train, data_by_user_user_indexes_train, data_by_user_movie_indexes_train, data_by_user_ratings_train,
-            data_by_user_user_index_offsets_test, data_by_user_user_indexes_test, data_by_user_movie_indexes_test, data_by_user_ratings_test,
-            data_by_movie_movie_index_offsets_train, data_by_movie_user_indexes_train, data_by_movie_movie_indexes_train, data_by_movie_ratings_train,
-            num_users, num_movies):
+def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_train, data_by_user_ratings_train,
+        data_by_user_user_index_offsets_test, data_by_user_movie_indexes_test, data_by_user_ratings_test,
+        data_by_movie_movie_index_offsets_train, data_by_movie_user_indexes_train, data_by_movie_ratings_train,
+        num_users, num_movies):
     
     user_biases = np.zeros(shape=(num_users))
     movie_biases = np.zeros(shape=(num_movies))
@@ -126,17 +126,18 @@ if __name__ == "__main__":
 
     data_by_user, data_by_movie, index_to_user_id, index_to_movie_id = parse_data(data)
 
-    data_by_user_train, data_by_user_test = random_split(data_by_user)
-    data_by_movie_train, data_by_movie_test = random_split(data_by_movie)
-    data_by_user_user_index_offsets_train, data_by_user_user_indexes_train, data_by_user_movie_indexes_train, data_by_user_ratings_train = flatten_user_data(data_by_user_train)
-    data_by_user_user_index_offsets_test, data_by_user_user_indexes_test, data_by_user_movie_indexes_test, data_by_user_ratings_test = flatten_user_data(data_by_user_test)
-    data_by_movie_movie_index_offsets_train, data_by_movie_user_indexes_train, data_by_movie_movie_indexes_train, data_by_movie_ratings_train = flatten_movie_data(data_by_movie_train)
+    data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
+
+    data_by_user_user_index_offsets_train, data_by_user_movie_indexes_train, data_by_user_ratings_train = flatten_user_data(data_by_user_train)
+    data_by_user_user_index_offsets_test, data_by_user_movie_indexes_test, data_by_user_ratings_test = flatten_user_data(data_by_user_test)
+    data_by_movie_movie_index_offsets_train, data_by_movie_user_indexes_train, data_by_movie_ratings_train = flatten_movie_data(data_by_movie_train)
+    
     num_users = len(data_by_user)
     num_movies = len(data_by_movie)
 
-    train_losses, test_losses, train_errors, test_errors =  train(data_by_user_user_index_offsets_train, data_by_user_user_indexes_train, data_by_user_movie_indexes_train, data_by_user_ratings_train,
-                                                            data_by_user_user_index_offsets_test, data_by_user_user_indexes_test, data_by_user_movie_indexes_test, data_by_user_ratings_test,
-                                                            data_by_movie_movie_index_offsets_train, data_by_movie_user_indexes_train, data_by_movie_movie_indexes_train, data_by_movie_ratings_train,
+    train_losses, test_losses, train_errors, test_errors =  train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_train, data_by_user_ratings_train,
+                                                            data_by_user_user_index_offsets_test, data_by_user_movie_indexes_test, data_by_user_ratings_test,
+                                                            data_by_movie_movie_index_offsets_train, data_by_movie_user_indexes_train, data_by_movie_ratings_train,
                                                             num_users, num_movies)
     
     plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)

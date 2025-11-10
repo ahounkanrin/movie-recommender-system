@@ -140,20 +140,12 @@ def chrono_split(data_by_user, data_by_movie):
     return data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test
 
 if __name__ == "__main__":
-
     DATA_DIR = "./data/ml-latest-small"
     data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
     # data = data.sort("timestamp")
-    # sample_size = 10000000
-    # data = data[:sample_size]
     
     data_by_user, data_by_movie, index_to_user_id, index_to_movie_id = parse_data(data)
-    # plot_rating_distribution(data_by_user, data_by_movie)
-
-    # data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test, _, _ = parse_and_random_split(data)
-
-    data_by_user_train, data_by_user_test = random_split(data_by_user)
-    data_by_movie_train, data_by_movie_test = random_split(data_by_movie)
+    data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
 
     # plot_rating_distribution(data_by_user_train, data_by_movie_train)
     plot_rating_distribution(data_by_user_test, data_by_movie_test)

@@ -59,15 +59,11 @@ def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_trai
             for i in range(start_idx, end_idx):
                 n = data_by_user_movie_indexes_train[i]
                 r = data_by_user_ratings_train[i]
-                # movie_vector = movie_embeddings[n]
 
                 A += np.outer(movie_embeddings[n], movie_embeddings[n])
                 b += lambda_ * (r - user_biases[m] - movie_biases[n]) * movie_embeddings[n]
             
             A = lambda_ * A + tau_ * I
-            # A = np.linalg.solve(A, I)
-            
-            # user_embeddings[m] = A @ b
             user_embeddings[m] = np.linalg.solve(A, b)
 
         for n in prange(num_movies):
@@ -92,15 +88,12 @@ def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_trai
             for i in range(start_idx, end_idx):
                 m = data_by_movie_user_indexes_train[i]
                 r = data_by_movie_ratings_train[i]
-                # user_vector = user_embeddings[m]
 
                 A += np.outer(user_embeddings[m], user_embeddings[m])
                 b += lambda_ * (r - user_biases[m] - movie_biases[n]) * user_embeddings[m]
             
             A = lambda_ * A + tau_ * I
-            # A = np.linalg.solve(A, I)
             
-            # movie_embeddings[n] = A @ b
             movie_embeddings[n] = np.linalg.solve(A, b)
 
         # compute train loss
@@ -110,12 +103,10 @@ def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_trai
         for m in prange(num_users):
             start_idx = data_by_user_user_index_offsets_train[m]
             end_idx = data_by_user_user_index_offsets_train[m+1]
-            # user_vector = user_embeddings[m]
 
             for i in range(start_idx, end_idx):
                 n = data_by_user_movie_indexes_train[i]
                 r = data_by_user_ratings_train[i]
-                # movie_vector = movie_embeddings[n]
 
                 loss_train += (lambda_/2) * (r - user_biases[m] - movie_biases[n]
                                              - np.dot(user_embeddings[m], movie_embeddings[n]))**2
@@ -134,12 +125,10 @@ def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_trai
         for m in prange(num_users):
             start_idx = data_by_user_user_index_offsets_test[m]
             end_idx = data_by_user_user_index_offsets_test[m+1]
-            # user_vector = user_embeddings[m]
 
             for i in range(start_idx, end_idx):
                 n = data_by_user_movie_indexes_test[i]
                 r = data_by_user_ratings_test[i]
-                # movie_vector = movie_embeddings[n]
 
                 loss_test += (lambda_/2) * (r - user_biases[m] - movie_biases[n]
                                             - np.dot(user_embeddings[m], movie_embeddings[n]))**2
@@ -198,7 +187,6 @@ if __name__ == "__main__":
     # data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
     data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = chrono_split(data_by_user, data_by_movie)
 
-
     data_by_user_user_index_offsets_train, data_by_user_movie_indexes_train, data_by_user_ratings_train = flatten_user_data(data_by_user_train)
     data_by_user_user_index_offsets_test, data_by_user_movie_indexes_test, data_by_user_ratings_test = flatten_user_data(data_by_user_test)
     data_by_movie_movie_index_offsets_train, data_by_movie_user_indexes_train, data_by_movie_ratings_train = flatten_movie_data(data_by_movie_train)
@@ -212,5 +200,3 @@ if __name__ == "__main__":
                                                             num_users, num_movies)
     
     plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)
-
-    # set_num_threads(1)
