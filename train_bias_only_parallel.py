@@ -14,7 +14,7 @@ def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_trai
     
     user_biases = np.zeros(shape=(num_users))
     movie_biases = np.zeros(shape=(num_movies))
-    lambda_ = 0.1
+    lambda_ = 0.01
     gamma_ = 0.01
     num_epochs = 10
 
@@ -106,14 +106,17 @@ def plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)
     ax[0].legend()
     ax[1].legend()
     fig.suptitle("Negative log likelihood")
+    ax[0].grid(True)
+    ax[1].grid(True)
     plt.savefig("./outputs/plots/bias_only_model_nll_32M.pdf")
     plt.close()
 
-    fig, ax = plt.subplots(2, 1)
-    ax[0].plot(train_errors, label="Train", color="b")
-    ax[1].plot(test_errors, label="Test", color="r")
-    ax[0].legend()
-    ax[1].legend()
+    fig, ax = plt.subplots(1, 1)
+    ax.plot(train_errors, label="Train", color="b")
+    ax.plot(test_errors, label="Test", color="r")
+    ax.legend()
+    ax.legend()
+    ax.grid(True)
     plt.suptitle("RMSE")
     plt.savefig("./outputs/plots/bias_only_model_rmse_32M.pdf")
 

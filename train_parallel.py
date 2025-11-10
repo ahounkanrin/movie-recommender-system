@@ -13,7 +13,7 @@ random.seed(42)
 lambda_ = 0.1
 gamma_ = 0.1
 tau_ = 0.1
-num_epochs = 10
+num_epochs = 15
 embedding_dim = 16
 
 I = np.eye(embedding_dim)
@@ -163,7 +163,7 @@ def plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)
     fig.suptitle("Negative log likelihood")
     ax[0].grid(True)
     ax[1].grid(True)
-    plt.savefig("./outputs/plots/bias_and_embedding_model_nll_32M.pdf")
+    plt.savefig("./outputs/plots/bias_and_embedding_model_nll_32M_parallel.pdf")
     plt.close()
 
     fig, ax = plt.subplots(1, 1)
@@ -173,7 +173,7 @@ def plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)
     ax.legend()
     plt.suptitle("RMSE")
     ax.grid(True)
-    plt.savefig("./outputs/plots/bias_and_embeddding_model_rmse_32M.pdf")
+    plt.savefig("./outputs/plots/bias_and_embeddding_model_rmse_32M_parallel.pdf")
     plt.close()
 
 if __name__ == "__main__":

@@ -7,17 +7,17 @@ from tqdm import tqdm
 from matplotlib import pyplot as plt
 
 
-lambda_ = 0.01
-gamma_ = 0.01
-tau_ = 0.2
-num_epochs = 10
-embedding_dim = 32
+lambda_ = 0.1
+gamma_ = 0.1
+tau_ = 0.1
+num_epochs = 15
+embedding_dim = 16
 
 I = np.eye(embedding_dim)
 
-DATA_DIR = "./data/ml-latest-small"
+# DATA_DIR = "./data/ml-latest-small"
 # DATA_DIR = "./data/ml-25m"
-# DATA_DIR = "./data/ml-32m"
+DATA_DIR = "./data/ml-32m"
 data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
 data = data.sort("timestamp")
 
@@ -134,7 +134,7 @@ ax[1].legend()
 fig.suptitle("Negative log likelihood")
 ax[0].grid(True)
 ax[1].grid(True)
-plt.savefig("./outputs/plots/bias_and_embedding_model_nll_small.pdf")
+plt.savefig("./outputs/plots/bias_and_embedding_model_32M.pdf")
 plt.close()
 
 fig, ax = plt.subplots(1, 1)
@@ -144,5 +144,5 @@ ax.legend()
 ax.legend()
 plt.suptitle("RMSE")
 ax.grid(True)
-plt.savefig("./outputs/plots/bias_and_embeddding_model_rmse_small.pdf")
+plt.savefig("./outputs/plots/bias_and_embeddding_model_rmse_32M.pdf")
 plt.close()
