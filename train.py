@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 lambda_ = 0.1
 gamma_ = 0.1
 tau_ = 0.1
-num_epochs = 15
+num_epochs = 10
 embedding_dim = 16
 
 I = np.eye(embedding_dim)
@@ -127,22 +127,25 @@ for epoch in range(num_epochs):
           \t mse_train = {rmse_train:.4f} \t mse_test = {rmse_test:.4f}")
     
 fig, ax = plt.subplots(2, 1)
-ax[0].plot(train_losses, label="Train", color="b")
-ax[1].plot(test_losses, label="Test", color="r")
+ax[0].plot([i for i in range(1, len(train_losses) + 1)], train_losses, label="Train", color="b")
+ax[1].plot([i for i in range(1, len(test_losses) + 1)], test_losses, label="Test", color="r")
 ax[0].legend()
 ax[1].legend()
 fig.suptitle("Negative log likelihood")
 ax[0].grid(True)
 ax[1].grid(True)
+ax[1].set_xlabel("Epoch")
 plt.savefig("./outputs/plots/bias_and_embedding_model_32M.pdf")
 plt.close()
 
 fig, ax = plt.subplots(1, 1)
-ax.plot(train_errors, label="Train", color="b")
-ax.plot(test_errors, label="Test", color="r")
+ax.plot([i for i in range(1, len(train_errors) + 1)], train_errors, label="Train", color="b")
+ax.plot([i for i in range(1, len(test_errors) + 1)], test_errors, label="Test", color="r")
 ax.legend()
 ax.legend()
 plt.suptitle("RMSE")
 ax.grid(True)
+ax.set_xlabel("Epoch")
+ax.set_ylabel("RMSE")
 plt.savefig("./outputs/plots/bias_and_embeddding_model_rmse_32M.pdf")
 plt.close()

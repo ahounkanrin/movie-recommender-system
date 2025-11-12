@@ -6,14 +6,14 @@ import random
 from data_parser import (parse_data, random_split, chrono_split,
                          flatten_user_data, flatten_movie_data)
 from matplotlib import pyplot as plt
-from numba import jit, prange, set_num_threads
+from numba import jit, prange
 
 random.seed(42)
 
 lambda_ = 0.1
 gamma_ = 0.1
 tau_ = 0.1
-num_epochs = 15
+num_epochs = 10
 embedding_dim = 16
 
 I = np.eye(embedding_dim)
@@ -22,7 +22,7 @@ I = np.eye(embedding_dim)
 def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_train, data_by_user_ratings_train,
             data_by_user_user_index_offsets_test, data_by_user_movie_indexes_test, data_by_user_ratings_test,
             data_by_movie_movie_index_offsets_train, data_by_movie_user_indexes_train, data_by_movie_ratings_train,
-            num_users, num_movies, ):
+            num_users, num_movies):
     
     user_biases = np.zeros(shape=(num_users))
     movie_biases = np.zeros(shape=(num_movies))
@@ -156,22 +156,25 @@ def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_trai
 
 def plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors):    
     fig, ax = plt.subplots(2, 1)
-    ax[0].plot(train_losses, label="Train", color="b")
-    ax[1].plot(test_losses, label="Test", color="r")
+    ax[0].plot(np.arange(1, len(train_losses) + 1),train_losses, label="Train", color="b")
+    ax[1].plot(np.arange(1, len(test_losses) + 1), test_losses, label="Test", color="r-")
     ax[0].legend()
     ax[1].legend()
     fig.suptitle("Negative log likelihood")
     ax[0].grid(True)
     ax[1].grid(True)
+    ax[1].set_xlabel("Epoch")
     plt.savefig("./outputs/plots/bias_and_embedding_model_nll_32M_parallel.pdf")
     plt.close()
 
     fig, ax = plt.subplots(1, 1)
-    ax.plot(train_errors, label="Train", color="b")
-    ax.plot(test_errors, label="Test", color="r")
+    ax.plot(np.arange(1, len(train_errors) + 1), train_errors, label="Train", color="b")
+    ax.plot(np.arange(1, len(test_errors) + 1), test_errors, label="Test", color="r")
     ax.legend()
     ax.legend()
-    plt.suptitle("RMSE")
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("RMSE")
+    plt.suptitle("Mean squared errors")
     ax.grid(True)
     plt.savefig("./outputs/plots/bias_and_embeddding_model_rmse_32M_parallel.pdf")
     plt.close()
