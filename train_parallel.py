@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 from numba import jit, prange
 
 random.seed(42)
+np.random.seed(42) 
 
 lambda_ = 0.1
 gamma_ = 0.1

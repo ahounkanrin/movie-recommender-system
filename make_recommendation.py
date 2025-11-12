@@ -1,18 +1,22 @@
 import numpy as np
 import polars as pl
 import os
+import random
 
 from data_parser import parse_data, random_split, chrono_split
 from tqdm import tqdm
 from matplotlib import pyplot as plt
 
 
+random.seed(42)
+np.random.seed(42) 
+
 lambda_ = 0.1
 gamma_ = 0.1
 tau_ = 0.1
 embedding_dim = 16
 
-num_steps = 1
+num_steps = 10
 
 I = np.eye(embedding_dim)
 
@@ -25,15 +29,18 @@ data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_ind
 movie_data = pl.read_csv(os.path.join(DATA_DIR, "movies.csv"))
 
 model = np.load(os.path.join(MODEL_DIR, "model.npz"))
-
 user_biases = model["user_biases"]
 movie_biases = model["movie_biases"]
-
 user_embeddings = model["user_embeddings"]
 movie_embeddings = model["movie_embeddings"]
 
 # movie_title = "Lord of the Rings, The (1978)"
 movie_title = "Harry Potter and the Chamber of Secrets (2002)"
+# movie_title = "Kung Fu Panda 2 (2011)"
+# movie_title = "Countdown to Zero (2010)"
+# movie_title = "Love and Other Catastrophes (1996)"
+# movie_title = "Blood Diamond (2006)"
+
 dummy_user_rating = 5
 
 movie_id = movie_data.filter(pl.col("title") == movie_title).select("movieId").item()
@@ -64,13 +71,14 @@ for step in range(num_steps):
     rmse = (dummy_user_rating - dummy_user_bias - movie_biases[movie_index]\
                     - np.dot(dummy_user_embedding, movie_embeddings[movie_index]))**2
     
+    rmse = np.sqrt(rmse)
     loss += (gamma_/2) * (np.sum(user_biases**2) + np.sum(movie_biases**2))
     loss += (tau_/2) * (np.linalg.norm(user_embeddings)**2 + np.linalg.norm(movie_embeddings)**2) 
     
     losses.append(loss)
     errors.append(rmse)
 
-    print(f"Step: {step+1} \t train_loss = {loss:.4f} \t mse_train = {rmse:.4f}")
+    print(f"Step: {step+1} \t loss = {loss:.4f} \t rmse = {rmse:.4f}")
 
 k = 10
 num_movies = len(movie_biases)
