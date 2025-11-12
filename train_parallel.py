@@ -13,7 +13,7 @@ random.seed(42)
 lambda_ = 0.1
 gamma_ = 0.1
 tau_ = 0.1
-num_epochs = 10
+num_epochs = 15
 embedding_dim = 16
 
 I = np.eye(embedding_dim)
@@ -157,7 +157,7 @@ def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_trai
 def plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors):    
     fig, ax = plt.subplots(2, 1)
     ax[0].plot(np.arange(1, len(train_losses) + 1),train_losses, label="Train", color="b")
-    ax[1].plot(np.arange(1, len(test_losses) + 1), test_losses, label="Test", color="r-")
+    ax[1].plot(np.arange(1, len(test_losses) + 1), test_losses, label="Test", color="r", linestyle="--")
     ax[0].legend()
     ax[1].legend()
     fig.suptitle("Negative log likelihood")
@@ -169,7 +169,7 @@ def plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)
 
     fig, ax = plt.subplots(1, 1)
     ax.plot(np.arange(1, len(train_errors) + 1), train_errors, label="Train", color="b")
-    ax.plot(np.arange(1, len(test_errors) + 1), test_errors, label="Test", color="r")
+    ax.plot(np.arange(1, len(test_errors) + 1), test_errors, label="Test", color="r", linestyle="--")
     ax.legend()
     ax.legend()
     ax.set_xlabel("Epoch")

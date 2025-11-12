@@ -1,0 +1,97 @@
+import numpy as np
+import polars as pl
+import os
+
+from data_parser import parse_data, random_split, chrono_split
+from tqdm import tqdm
+from matplotlib import pyplot as plt
+
+
+lambda_ = 0.1
+gamma_ = 0.1
+tau_ = 0.1
+embedding_dim = 16
+
+num_steps = 1
+
+I = np.eye(embedding_dim)
+
+MODEL_DIR = "./models"
+DATA_DIR = "./data/ml-32m"
+
+data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
+data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = parse_data(data)
+
+movie_data = pl.read_csv(os.path.join(DATA_DIR, "movies.csv"))
+
+model = np.load(os.path.join(MODEL_DIR, "model.npz"))
+
+user_biases = model["user_biases"]
+movie_biases = model["movie_biases"]
+
+user_embeddings = model["user_embeddings"]
+movie_embeddings = model["movie_embeddings"]
+
+# movie_title = "Lord of the Rings, The (1978)"
+movie_title = "Harry Potter and the Chamber of Secrets (2002)"
+dummy_user_rating = 5
+
+movie_id = movie_data.filter(pl.col("title") == movie_title).select("movieId").item()
+movie_index = movie_id_to_index[movie_id]
+
+dummy_user_bias = 0. 
+dummy_user_embedding = np.random.normal(loc=0, scale=np.sqrt(1/embedding_dim), size=(embedding_dim))
+
+losses = []
+errors = []
+
+for step in range(num_steps):
+    
+    bias = lambda_ * (dummy_user_rating - movie_biases[movie_index]\
+                        - np.dot(dummy_user_embedding, movie_embeddings[movie_index]))
+    bias /= (lambda_ + gamma_)
+    dummy_user_bias = bias
+
+    A = np.outer(movie_embeddings[movie_index], movie_embeddings[movie_index])
+    b = lambda_ * (dummy_user_rating - dummy_user_bias - movie_biases[movie_index]) * movie_embeddings[movie_index]
+    A = lambda_ * A + tau_ * I 
+    dummy_user_embedding = np.linalg.solve(A, b)
+
+    # compute train loss
+   
+    loss = (lambda_/2) * (dummy_user_rating - dummy_user_bias - movie_biases[movie_index]\
+                                    - np.dot(dummy_user_embedding, movie_embeddings[movie_index]))**2
+    rmse = (dummy_user_rating - dummy_user_bias - movie_biases[movie_index]\
+                    - np.dot(dummy_user_embedding, movie_embeddings[movie_index]))**2
+    
+    loss += (gamma_/2) * (np.sum(user_biases**2) + np.sum(movie_biases**2))
+    loss += (tau_/2) * (np.linalg.norm(user_embeddings)**2 + np.linalg.norm(movie_embeddings)**2) 
+    
+    losses.append(loss)
+    errors.append(rmse)
+
+    print(f"Step: {step+1} \t train_loss = {loss:.4f} \t mse_train = {rmse:.4f}")
+
+k = 10
+num_movies = len(movie_biases)
+predicted_ratings = np.zeros(shape=(num_movies))
+
+for n in range(num_movies):
+    # Do not recommend the same
+    if n  == movie_index:
+        continue
+
+    # Filter out movie with too few ratings in the training set
+    if len(data_by_movie[n]) < 100:
+        continue
+    
+    predicted_ratings[n] = np.dot(dummy_user_embedding, movie_embeddings[n])\
+                            + 0.05 * movie_biases[n]
+ranked_movies = np.flip(np.argsort(predicted_ratings))
+topk_movies_indices = ranked_movies[:k]
+
+topk_movies_ids = [index_to_movie_id[x] for x in topk_movies_indices]
+topk_movies_titles = [movie_data.filter(pl.col("movieId") == x).select("title").item()\
+                        for x in topk_movies_ids]
+
+print(f"Top {k} recommendations: {topk_movies_titles}")

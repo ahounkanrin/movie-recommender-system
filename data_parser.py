@@ -41,7 +41,8 @@ def parse_data(data):
         data_by_user[user_index].append((movie_index, rating))
         data_by_movie[movie_index].append((user_index, rating))
             
-    return data_by_user, data_by_movie, index_to_user_id, index_to_movie_id
+    return (data_by_user, data_by_movie, index_to_user_id, index_to_movie_id,
+            user_id_to_index, movie_id_to_index)
 
 
 def random_split(data_by_user, data_by_movie):
