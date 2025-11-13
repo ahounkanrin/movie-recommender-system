@@ -15,7 +15,7 @@ lambda_ = 0.1
 gamma_ = 0.1
 tau_ = 0.1
 num_epochs = 15
-embedding_dim = 16
+embedding_dim = 32
 
 I = np.eye(embedding_dim)
 
@@ -150,14 +150,10 @@ if __name__ == "__main__":
     # DATA_DIR = "./data/ml-25m"
     DATA_DIR = "./data/ml-32m"
     data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
-    # data = data.sort("timestamp")
 
     data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, _, _ = parse_data(data)
-    # data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
-    # data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = chrono_split(data_by_user, data_by_movie)
-
+    
     data_by_user_user_index_offsets_train, data_by_user_movie_indexes_train, data_by_user_ratings_train = flatten_user_data(data_by_user)
-    # data_by_user_user_index_offsets_test, data_by_user_movie_indexes_test, data_by_user_ratings_test = flatten_user_data(data_by_user_test)
     data_by_movie_movie_index_offsets_train, data_by_movie_user_indexes_train, data_by_movie_ratings_train = flatten_movie_data(data_by_movie)
     
     num_users = len(data_by_user)
@@ -169,7 +165,7 @@ if __name__ == "__main__":
     
     user_biases, user_embeddings, movie_biases, movie_embeddings = model
 
-    np.savez("./models/model.npz", user_biases=user_biases, user_embeddings=user_embeddings,
+    np.savez(f"./models/model_embeding_dim_{embedding_dim}.npz", user_biases=user_biases, user_embeddings=user_embeddings,
                         movie_biases=movie_biases, movie_embeddings=movie_embeddings)
 
     plot_errors_and_losses(train_losses, train_errors)

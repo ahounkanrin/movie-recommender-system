@@ -15,7 +15,7 @@ lambda_ = 0.1
 gamma_ = 0.1
 tau_ = 0.1
 num_epochs = 15
-embedding_dim = 16
+embedding_dim = 32
 
 I = np.eye(embedding_dim)
 
@@ -165,7 +165,7 @@ def plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)
     ax[0].grid(True)
     ax[1].grid(True)
     ax[1].set_xlabel("Epoch")
-    plt.savefig("./outputs/plots/bias_and_embedding_model_nll_32M_parallel.pdf")
+    plt.savefig("./outputs/plots/bias_and_embedding_model_nll_32M_parallel_embed32.pdf")
     plt.close()
 
     fig, ax = plt.subplots(1, 1)
@@ -177,7 +177,7 @@ def plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)
     ax.set_ylabel("RMSE")
     plt.suptitle("Mean squared errors")
     ax.grid(True)
-    plt.savefig("./outputs/plots/bias_and_embeddding_model_rmse_32M_parallel.pdf")
+    plt.savefig("./outputs/plots/bias_and_embeddding_model_rmse_32M_parallel_embed32.pdf")
     plt.close()
 
 if __name__ == "__main__":
