@@ -15,7 +15,7 @@ lambda_ = 0.1
 gamma_ = 0.1
 tau_ = 0.1
 num_epochs = 15
-embedding_dim = 32
+embedding_dim = 16
 
 I = np.eye(embedding_dim)
 
@@ -132,7 +132,7 @@ def plot_errors_and_losses(train_losses, train_errors):
     fig.suptitle("Negative log likelihood")
     ax.grid(True)
     ax.set_xlabel("Epoch")
-    plt.savefig("./outputs/plots/bias_and_embedding_model_nll_32M_parallel_full_dataset.pdf")
+    plt.savefig(f"./outputs/plots/bias_and_embedding_model_nll_25M_full_dataset_embed_{embedding_dim}.pdf")
     plt.close()
 
     fig, ax = plt.subplots(1, 1)
@@ -142,13 +142,13 @@ def plot_errors_and_losses(train_losses, train_errors):
     ax.set_ylabel("RMSE")
     plt.suptitle("Mean squared error")
     ax.grid(True)
-    plt.savefig("./outputs/plots/bias_and_embeddding_model_rmse_32M_parallel_full-dataset.pdf")
+    plt.savefig(f"./outputs/plots/bias_and_embeddding_model_rmse_25M_full_dataset_embed_{embedding_dim}.pdf")
     plt.close()
 
 if __name__ == "__main__":
     # DATA_DIR = "./data/ml-latest-small"
-    # DATA_DIR = "./data/ml-25m"
-    DATA_DIR = "./data/ml-32m"
+    DATA_DIR = "./data/ml-25m"
+    # DATA_DIR = "./data/ml-32m"
     data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
 
     data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, _, _ = parse_data(data)
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     
     user_biases, user_embeddings, movie_biases, movie_embeddings = model
 
-    np.savez(f"./models/model_embeding_dim_{embedding_dim}.npz", user_biases=user_biases, user_embeddings=user_embeddings,
+    np.savez(f"./models/model_embeding_dim_{embedding_dim}_25m.npz", user_biases=user_biases, user_embeddings=user_embeddings,
                         movie_biases=movie_biases, movie_embeddings=movie_embeddings)
 
     plot_errors_and_losses(train_losses, train_errors)

@@ -20,16 +20,17 @@ num_steps = 1
 I = np.eye(embedding_dim)
 
 MODEL_DIR = "./models"
-DATA_DIR = "./data/ml-32m"
+# DATA_DIR = "./data/ml-32m"
+DATA_DIR = "./data/ml-25m"
 
-with open("./data/processed/data_ml_32m.pkl", "rb") as f:
+with open("./data/processed/data_ml_25m.pkl", "rb") as f:
     rating_data = pickle.load(f)
 
 data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = rating_data
 
 movie_data = pl.read_csv(os.path.join(DATA_DIR, "movies.csv"))
 
-model = np.load(os.path.join(MODEL_DIR, f"model_embeding_dim_{embedding_dim}.npz"))
+model = np.load(os.path.join(MODEL_DIR, f"model_embeding_dim_{embedding_dim}_25m.npz"))
 user_biases = model["user_biases"]
 movie_biases = model["movie_biases"]
 user_embeddings = model["user_embeddings"]
