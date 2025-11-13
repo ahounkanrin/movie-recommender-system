@@ -2,6 +2,7 @@ import os
 import numpy as np
 import polars as pl
 import random
+import pickle
 
 from matplotlib import pyplot as plt
 from tqdm import tqdm
@@ -141,12 +142,16 @@ def chrono_split(data_by_user, data_by_movie):
     return data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test
 
 if __name__ == "__main__":
-    DATA_DIR = "./data/ml-latest-small"
+    DATA_DIR = "./data/ml-32m"
     data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
     # data = data.sort("timestamp")
     
-    data_by_user, data_by_movie, index_to_user_id, index_to_movie_id = parse_data(data)
-    data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
+    data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = parse_data(data)
+    # data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
 
     # plot_rating_distribution(data_by_user_train, data_by_movie_train)
-    plot_rating_distribution(data_by_user_test, data_by_movie_test)
+    # plot_rating_distribution(data_by_user_test, data_by_movie_test)
+    processed_data = data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index
+
+    with open("./data/processed/data_ml_32m.pkl", "wb") as f:
+        pickle.dump(processed_data, f)

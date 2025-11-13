@@ -16,4 +16,4 @@ def plot_dist(lambda_, tau, r):
     plt.show()
 
 
-plot_dist(1, 0.01, 2.5)
+plot_dist(0.5, 0.1, 2.5)

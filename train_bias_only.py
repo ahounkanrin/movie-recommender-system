@@ -13,7 +13,7 @@ DATA_DIR = "./data/ml-32m"
 data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
 # data = data.sort("timestamp")
 
-data_by_user, data_by_movie, index_to_user_id, index_to_movie_id = parse_data(data)
+data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, _, _ = parse_data(data)
 
 data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
 

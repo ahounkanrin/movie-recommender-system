@@ -2,6 +2,7 @@ import numpy as np
 import polars as pl
 import os
 import random
+import pickle
 
 from data_parser import parse_data, random_split, chrono_split
 from tqdm import tqdm
@@ -23,8 +24,13 @@ I = np.eye(embedding_dim)
 MODEL_DIR = "./models"
 DATA_DIR = "./data/ml-32m"
 
-data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
-data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = parse_data(data)
+# data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
+# data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = parse_data(data)
+
+with open("./data/processed/data_ml_32m.pkl", "rb") as f:
+    data = pickle.load(f)
+
+data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = data
 
 movie_data = pl.read_csv(os.path.join(DATA_DIR, "movies.csv"))
 
@@ -36,7 +42,7 @@ movie_embeddings = model["movie_embeddings"]
 
 # movie_title = "Lord of the Rings, The (1978)"
 movie_title = "Harry Potter and the Chamber of Secrets (2002)"
-# movie_title = "Kung Fu Panda 2 (2011)"
+# movie_title = "Kung Fu Panda (2008)"
 # movie_title = "Countdown to Zero (2010)"
 # movie_title = "Love and Other Catastrophes (1996)"
 # movie_title = "Blood Diamond (2006)"
@@ -53,7 +59,6 @@ losses = []
 errors = []
 
 for step in range(num_steps):
-    
     bias = lambda_ * (dummy_user_rating - movie_biases[movie_index]\
                         - np.dot(dummy_user_embedding, movie_embeddings[movie_index]))
     bias /= (lambda_ + gamma_)
@@ -65,7 +70,6 @@ for step in range(num_steps):
     dummy_user_embedding = np.linalg.solve(A, b)
 
     # compute train loss
-   
     loss = (lambda_/2) * (dummy_user_rating - dummy_user_bias - movie_biases[movie_index]\
                                     - np.dot(dummy_user_embedding, movie_embeddings[movie_index]))**2
     rmse = (dummy_user_rating - dummy_user_bias - movie_biases[movie_index]\
