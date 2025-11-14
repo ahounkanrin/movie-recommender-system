@@ -142,8 +142,8 @@ def chrono_split(data_by_user, data_by_movie):
     return data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test
 
 if __name__ == "__main__":
-    # DATA_DIR = "./data/ml-32m"
-    DATA_DIR = "./data/ml-25m"
+    DATA_DIR = "./data/ml-32m"
+    # DATA_DIR = "./data/ml-25m"
     data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
     # data = data.sort("timestamp")
     
@@ -154,5 +154,5 @@ if __name__ == "__main__":
     # plot_rating_distribution(data_by_user_test, data_by_movie_test)
     processed_data = data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index
 
-    with open("./data/processed/data_ml_25m.pkl", "wb") as f:
+    with open("./data/processed/data_ml_32m.pkl", "wb") as f:
         pickle.dump(processed_data, f)

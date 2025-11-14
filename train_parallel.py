@@ -15,7 +15,7 @@ lambda_ = 0.1
 gamma_ = 0.1
 tau_ = 0.1
 num_epochs = 15
-embedding_dim = 2
+embedding_dim = 16
 
 I = np.eye(embedding_dim)
 
@@ -165,7 +165,7 @@ def plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)
     ax[0].grid(True)
     ax[1].grid(True)
     ax[1].set_xlabel("Epoch")
-    plt.savefig(f"./outputs/plots/bias_and_embedding_model_nll_25m_embed{embedding_dim}.pdf")
+    plt.savefig(f"./outputs/plots/bias_and_embedding_model_nll_32m_embed{embedding_dim}.pdf")
     plt.close()
 
     fig, ax = plt.subplots(1, 1)
@@ -177,13 +177,13 @@ def plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)
     ax.set_ylabel("RMSE")
     plt.suptitle("Mean squared errors")
     ax.grid(True)
-    plt.savefig(f"./outputs/plots/bias_and_embeddding_model_rmse_25m_embed{embedding_dim}.pdf")
+    plt.savefig(f"./outputs/plots/bias_and_embeddding_model_rmse_32m_embed{embedding_dim}.pdf")
     plt.close()
 
 if __name__ == "__main__":
     # DATA_DIR = "./data/ml-latest-small"
-    DATA_DIR = "./data/ml-25m"
-    # DATA_DIR = "./data/ml-32m"
+    # DATA_DIR = "./data/ml-25m"
+    DATA_DIR = "./data/ml-32m"
     data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
     data = data.sort("timestamp")
 
