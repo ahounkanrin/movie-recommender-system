@@ -43,27 +43,28 @@ def load_rating_data():
 
 def process_movie_data():
     movie_data = pl.read_csv(os.path.join(DATA_DIR, "movies.csv"))
-    movie_title_to_movie_id = {row["title"]: row["movieId"] for row in movie_data.iter_rows(named=True)}
-    movie_id_to_movie_title = dict([(v, k) for k,v in movie_title_to_movie_id.items()])
-    movie_titles = sorted(movie_title_to_movie_id.keys())
-    return movie_id_to_movie_title, movie_title_to_movie_id, movie_titles
+    movie_id_to_movie_title = {row["movieId"]: row["title"] for row in movie_data.iter_rows(named=True)}
+    movie_titles = sorted(movie_id_to_movie_title.values())
+    return movie_id_to_movie_title, movie_titles, movie_data
 
 
 user_biases, movie_biases, user_embeddings, movie_embeddings = load_model()
 data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = load_rating_data()
-movie_id_to_movie_title, movie_title_to_movie_id, movie_titles = process_movie_data()
+movie_id_to_movie_title, movie_titles, movie_data = process_movie_data()
 
 # movie_title = "Lord of the Rings: The Fellowship of the Ring, The (2001)"
-movie_title = "Harry Potter and the Sorcerer's Stone (a.k.a. Harry Potter and the Philosopher's Stone) (2001)"
+# movie_title = "Harry Potter and the Sorcerer's Stone (a.k.a. Harry Potter and the Philosopher's Stone) (2001)"
 # movie_title = "Countdown to Zero (2010)"
 # movie_title = "Love and Other Catastrophes (1996)"
 # movie_title = "Blood Diamond (2006)"
 # movie_title = "Gladiator (2000)"
 # movie_title = "Fight For Space (2016)"
 # movie_title = "Kung Fu Panda (2008)"
+movie_title = "Toy Story (1995)"
+# movie_title = "Aladdin (1992)"
 
 dummy_user_rating = 5
-movie_id = movie_title_to_movie_id[movie_title]
+movie_id = movie_data.filter(pl.col("title") == movie_title).select("movieId").to_series().to_list()[0]
 movie_index = movie_id_to_index[movie_id]
 
 dummy_user_bias = 0. 

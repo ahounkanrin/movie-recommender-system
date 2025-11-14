@@ -88,13 +88,11 @@ def plot_rating_distribution(data_by_user, data_by_movie):
 def flatten_user_data(data):
     user_index_offsets = [0]
     movie_indexes = []
-    user_indexes = []
     ratings = []
     
     offset = 0
     for i in tqdm(range(len(data)), desc="Flatten user data"):
         for j in range(len(data[i])):
-            user_indexes.append(i)
             movie_indexes.append(data[i][j][0])
             ratings.append(data[i][j][1])
 
@@ -105,14 +103,12 @@ def flatten_user_data(data):
 
 def flatten_movie_data(data):
     movie_index_offsets = [0]
-    movie_indexes = []
     user_indexes = []
     ratings = []
     
     offset = 0
     for i in tqdm(range(len(data)), desc="Flatten movie data"):
         for j in range(len(data[i])):
-            movie_indexes.append(i)
             user_indexes.append(data[i][j][0])
             ratings.append(data[i][j][1])
         

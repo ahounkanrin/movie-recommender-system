@@ -19,7 +19,7 @@ embedding_dim = 16
 
 I = np.eye(embedding_dim)
 
-@jit(parallel=True)
+@jit(nopython=True, parallel=True)
 def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_train, data_by_user_ratings_train,
             data_by_user_user_index_offsets_test, data_by_user_movie_indexes_test, data_by_user_ratings_test,
             data_by_movie_movie_index_offsets_train, data_by_movie_user_indexes_train, data_by_movie_ratings_train,

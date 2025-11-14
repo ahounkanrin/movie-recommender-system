@@ -5,10 +5,6 @@ import os
 import random
 import pickle
 
-from data_parser import parse_data, random_split, chrono_split
-from tqdm import tqdm
-from matplotlib import pyplot as plt
-
 
 random.seed(42)
 np.random.seed(42) 
@@ -23,7 +19,6 @@ num_recommendations = 10
 
 MODEL_DIR = "./models"
 DATA_DIR = "./data/ml-32m"
-# DATA_DIR = "./data/ml-25m"
 
 
 @st.cache_resource
@@ -48,25 +43,24 @@ def load_rating_data():
 @st.cache_resource
 def process_movie_data():
     movie_data = pl.read_csv(os.path.join(DATA_DIR, "movies.csv"))
-    movie_title_to_movie_id = {row["title"]: row["movieId"] for row in movie_data.iter_rows(named=True)}
-    movie_id_to_movie_title = dict([(v, k) for k,v in movie_title_to_movie_id.items()])
-    movie_titles = sorted(movie_title_to_movie_id.keys())
-    return movie_id_to_movie_title, movie_title_to_movie_id, movie_titles
+    movie_id_to_movie_title = {row["movieId"]: row["title"] for row in movie_data.iter_rows(named=True)}
+    movie_titles = sorted(movie_id_to_movie_title.values())
+    return movie_id_to_movie_title, movie_titles, movie_data
 
 
 user_biases, movie_biases, user_embeddings, movie_embeddings = load_model()
 data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = load_rating_data()
-movie_id_to_movie_title, movie_title_to_movie_id, movie_titles = process_movie_data()
+movie_id_to_movie_title, movie_titles, movie_data = process_movie_data()
 
 num_movies = len(movie_biases)
 
-st.title("Movie Recommender App")
+st.title("Movie Recommendation App")
 selected_movie = st.selectbox("Select a movie", movie_titles, index=None)
 rating = st.slider(f"Rate this movie", 0.0, 5.0, 2.5, step=0.5)
 recommendation_request = st.button("Show recommendations")
 
-if selected_movie is not None and recommendation_request:
-    movie_id = movie_title_to_movie_id[selected_movie]
+if recommendation_request and selected_movie is not None:
+    movie_id = movie_data.filter(pl.col("title") == selected_movie).select("movieId").to_series().to_list()[0]
     movie_index = movie_id_to_index[movie_id]
 
     dummy_user_bias = 0. 

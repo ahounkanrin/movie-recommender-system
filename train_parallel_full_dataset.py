@@ -15,11 +15,11 @@ lambda_ = 0.1
 gamma_ = 0.1
 tau_ = 0.1
 num_epochs = 15
-embedding_dim = 8
+embedding_dim = 16
 
 I = np.eye(embedding_dim)
 
-@jit(parallel=True)
+@jit(nopython=True, parallel=True)
 def train(data_by_user_user_index_offsets_train, data_by_user_movie_indexes_train, data_by_user_ratings_train,
             data_by_movie_movie_index_offsets_train, data_by_movie_user_indexes_train, data_by_movie_ratings_train,
             num_users, num_movies):
