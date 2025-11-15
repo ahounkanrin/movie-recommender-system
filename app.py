@@ -71,10 +71,11 @@ selected_movie = st.selectbox("Select a movie", movie_titles, index=None)
 rating = st.slider(f"Rate this movie", 0.0, 5.0, 2.5, step=0.5)
 recommendation_request = st.button("Show recommendations")
 
+user_biases, movie_biases, user_embeddings, movie_embeddings = load_model()
+data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = load_rating_data()
+num_movies = len(movie_biases)
 if recommendation_request and selected_movie is not None:
-    user_biases, movie_biases, user_embeddings, movie_embeddings = load_model()
-    data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = load_rating_data()
-    num_movies = len(movie_biases)
+    
     movie_id = movie_data.filter(pl.col("title") == selected_movie).select("movieId").to_series().to_list()[0]
     movie_index = movie_id_to_index[movie_id]
 
