@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 
 random.seed(42)
+np.random.seed(42)
 
 def parse_data(data):
     num_users = data["userId"].n_unique()
@@ -87,35 +88,35 @@ def plot_rating_distribution(data_by_user, data_by_movie):
 
 def flatten_user_data(data):
     user_index_offsets = [0]
-    movie_indexes = []
+    movie_indices = []
     ratings = []
     
     offset = 0
     for i in tqdm(range(len(data)), desc="Flatten user data"):
         for j in range(len(data[i])):
-            movie_indexes.append(data[i][j][0])
+            movie_indices.append(data[i][j][0])
             ratings.append(data[i][j][1])
 
         offset += len(data[i])
         user_index_offsets.append(offset)
 
-    return np.array(user_index_offsets), np.array(movie_indexes), np.array(ratings)
+    return np.array(user_index_offsets), np.array(movie_indices), np.array(ratings)
 
 def flatten_movie_data(data):
     movie_index_offsets = [0]
-    user_indexes = []
+    user_indices = []
     ratings = []
     
     offset = 0
     for i in tqdm(range(len(data)), desc="Flatten movie data"):
         for j in range(len(data[i])):
-            user_indexes.append(data[i][j][0])
+            user_indices.append(data[i][j][0])
             ratings.append(data[i][j][1])
         
         offset += len(data[i])
         movie_index_offsets.append(offset)
 
-    return np.array(movie_index_offsets), np.array(user_indexes), np.array(ratings)
+    return np.array(movie_index_offsets), np.array(user_indices), np.array(ratings)
 
 def chrono_split(data_by_user, data_by_movie):
     data_by_user_train = [[] for i in range(len(data_by_user))]
@@ -141,14 +142,52 @@ if __name__ == "__main__":
     DATA_DIR = "./data/ml-32m"
     # DATA_DIR = "./data/ml-25m"
     data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
-    # data = data.sort("timestamp")
+    data = data.sort("timestamp")
     
     data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = parse_data(data)
     # data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
+    
+    num_users = len(data_by_user)
+    num_movies = len(data_by_movie)
 
     # plot_rating_distribution(data_by_user_train, data_by_movie_train)
     # plot_rating_distribution(data_by_user_test, data_by_movie_test)
+
     processed_data = data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index
 
     with open("./data/processed/data_ml_32m.pkl", "wb") as f:
         pickle.dump(processed_data, f)
+
+    data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = chrono_split(data_by_user, data_by_movie)
+
+    data_by_user_user_index_offsets_train, data_by_user_movie_indices_train, data_by_user_ratings_train = flatten_user_data(data_by_user_train)
+    data_by_user_user_index_offsets_test, data_by_user_movie_indices_test, data_by_user_ratings_test = flatten_user_data(data_by_user_test)
+    data_by_movie_movie_index_offsets_train, data_by_movie_user_indices_train, data_by_movie_ratings_train = flatten_movie_data(data_by_movie_train)
+
+    np.savez("./data/processed/flat_data_32m_train.npz",
+             data_by_user_user_index_offsets_train=data_by_user_user_index_offsets_train,
+             data_by_user_movie_indices_train=data_by_user_movie_indices_train,
+             data_by_user_ratings_train=data_by_user_ratings_train,
+             data_by_user_user_index_offsets_test=data_by_user_user_index_offsets_test,
+             data_by_user_movie_indices_test=data_by_user_movie_indices_test,
+             data_by_user_ratings_test=data_by_user_ratings_test,
+             data_by_movie_movie_index_offsets_train=data_by_movie_movie_index_offsets_train,
+             data_by_movie_user_indices_train=data_by_movie_user_indices_train,
+             data_by_movie_ratings_train=data_by_movie_ratings_train,
+             num_users=num_users,
+             num_movies=num_movies
+             )
+    
+    data_by_user_user_index_offsets_train, data_by_user_movie_indices_train, data_by_user_ratings_train = flatten_user_data(data_by_user)
+    data_by_movie_movie_index_offsets_train, data_by_movie_user_indices_train, data_by_movie_ratings_train = flatten_movie_data(data_by_movie)
+
+    np.savez("./data/processed/flat_data_32m_train_full.npz",
+             data_by_user_user_index_offsets_train=data_by_user_user_index_offsets_train,
+             data_by_user_movie_indices_train=data_by_user_movie_indices_train,
+             data_by_user_ratings_train=data_by_user_ratings_train,
+             data_by_movie_movie_index_offsets_train=data_by_movie_movie_index_offsets_train,
+             data_by_movie_user_indices_train=data_by_movie_user_indices_train,
+             data_by_movie_ratings_train=data_by_movie_ratings_train,
+             num_users=num_users,
+             num_movies=num_movies
+             )

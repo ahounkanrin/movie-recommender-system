@@ -13,7 +13,7 @@ np.random.seed(42)
 
 lambda_ = 0.1
 gamma_ = 0.1
-tau_ = 0.1
+tau_ = 2.0
 embedding_dim = 8
 num_steps = 10
 num_recommendations = 10
@@ -26,6 +26,7 @@ DATA_DIR = "./data/ml-32m"
 
 def load_model():
     model = np.load(os.path.join(MODEL_DIR, f"model_embeding_dim_{embedding_dim}_32m.npz"))
+    # model = np.load(os.path.join(MODEL_DIR, f"model_embeding_dim_{embedding_dim}_32m_use_val_data.npz"))
     user_biases = model["user_biases"]
     movie_biases = model["movie_biases"]
     user_embeddings = model["user_embeddings"]
@@ -53,14 +54,13 @@ data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_t
 movie_id_to_movie_title, movie_titles, movie_data = process_movie_data()
 
 # movie_title = "Lord of the Rings: The Fellowship of the Ring, The (2001)"
-# movie_title = "Harry Potter and the Sorcerer's Stone (a.k.a. Harry Potter and the Philosopher's Stone) (2001)"
-# movie_title = "Countdown to Zero (2010)"
+movie_title = "Harry Potter and the Sorcerer's Stone (a.k.a. Harry Potter and the Philosopher's Stone) (2001)"
 # movie_title = "Love and Other Catastrophes (1996)"
 # movie_title = "Blood Diamond (2006)"
 # movie_title = "Gladiator (2000)"
 # movie_title = "Fight For Space (2016)"
 # movie_title = "Kung Fu Panda (2008)"
-movie_title = "Toy Story (1995)"
+# movie_title = "Toy Story (1995)"
 # movie_title = "Aladdin (1992)"
 
 dummy_user_rating = 5
@@ -90,7 +90,7 @@ for n in range(num_movies):
         continue
 
     # Filter out movies with too few ratings in the training set
-    if len(data_by_movie[n]) < 100:
+    if len(data_by_movie[n]) < 200:
         continue
     
     predicted_ratings[n] = np.dot(dummy_user_embedding, movie_embeddings[n])\
