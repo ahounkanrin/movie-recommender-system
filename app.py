@@ -3,9 +3,9 @@ import numpy as np
 import polars as pl
 import os
 import random
-import pickle
 
 from huggingface_hub import hf_hub_download
+from data_parser import parse_data
 
 random.seed(42)
 np.random.seed(42) 
@@ -18,61 +18,52 @@ num_steps = 10
 I = np.eye(embedding_dim)
 num_recommendations = 10
 
-MODEL_DIR = "./models"
-DATA_DIR = "./data/ml-32m"
-
 
 @st.cache_resource
 def load_model():
-    MODEL_PATH = hf_hub_download(
-    repo_id="ahounkanrin/ml-32m-processed",
+    model_path = hf_hub_download(
+    repo_id="ahounkanrin/ml-32m",
     filename=f"model_embeding_dim_{embedding_dim}_32m.npz",
     repo_type="dataset")
-    model = np.load(MODEL_PATH)
-    # model = np.load(os.path.join(MODEL_DIR, f"model_embeding_dim_{embedding_dim}_32m_use_val_data.npz"))
+    model = np.load(model_path)
     user_biases = model["user_biases"]
     movie_biases = model["movie_biases"]
     user_embeddings = model["user_embeddings"]
     movie_embeddings = model["movie_embeddings"]
+
     return user_biases, movie_biases, user_embeddings, movie_embeddings
 
 
 @st.cache_resource
 def load_rating_data():
-    PROCESSED_DATA_PATH = hf_hub_download(
-    repo_id="ahounkanrin/ml-32m-processed",
-    filename="data_ml_32m.pkl",
-    repo_type="dataset")
-    # with open("./data/processed/data_ml_32m.pkl", "rb") as f:
-    with open(PROCESSED_DATA_PATH, "rb") as f:
-        rating_data = pickle.load(f)
+    rating_data_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/ratings.parquet"
+    data = pl.read_parquet(rating_data_url)
+    data = data.sort("timestamp")
+    _, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = parse_data(data)
 
-    _, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = rating_data
     return data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index
 
 
 @st.cache_resource
-def process_movie_data():
-    MOVIE_DATA_PATH = hf_hub_download(
-    repo_id="ahounkanrin/ml-32m-processed",
-    filename="movies.csv",
-    repo_type="dataset")
-    # movie_data = pl.read_csv(os.path.join(DATA_DIR, "movies.csv"))
-    movie_data = pl.read_csv(MOVIE_DATA_PATH)
+def load_movie_data():
+    movie_data_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/movies.parquet"
+    movie_data = pl.read_parquet(movie_data_url)
     movie_id_to_movie_title = {row["movieId"]: row["title"] for row in movie_data.iter_rows(named=True)}
     movie_titles = sorted(movie_id_to_movie_title.values())
+
     return movie_id_to_movie_title, movie_titles, movie_data
 
 
 st.title("Movie Recommendation App")
 
-movie_id_to_movie_title, movie_titles, movie_data = process_movie_data()
+movie_id_to_movie_title, movie_titles, movie_data = load_movie_data()
+user_biases, movie_biases, user_embeddings, movie_embeddings = load_model()
+data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = load_rating_data()
+
 selected_movie = st.selectbox("Select a movie", movie_titles, index=None)
 rating = st.slider(f"Rate this movie", 0.0, 5.0, 2.5, step=0.5)
 recommendation_request = st.button("Show recommendations")
 
-user_biases, movie_biases, user_embeddings, movie_embeddings = load_model()
-data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = load_rating_data()
 num_movies = len(movie_biases)
 if recommendation_request and selected_movie is not None:
     
