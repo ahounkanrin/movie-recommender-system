@@ -35,30 +35,34 @@ def load_model():
 
 
 @st.cache_resource
-def load_rating_data():
-    rating_data_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/ratings.parquet"
-    data = pl.read_parquet(rating_data_url)
-    data = data.sort("timestamp")
-    _, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = parse_data(data)
-
-    return data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index
-
-
-@st.cache_resource
 def load_movie_data():
     movie_data_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/movies.parquet"
+    index_to_movie_id_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/index_to_movie_id.parquet"
+    movie_id_to_index_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/movie_id_to_index.parquet"
+    rating_counts_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/rating_counts.parquet"
+
     movie_data = pl.read_parquet(movie_data_url)
     movie_id_to_movie_title = {row["movieId"]: row["title"] for row in movie_data.iter_rows(named=True)}
     movie_titles = sorted(movie_id_to_movie_title.values())
 
-    return movie_id_to_movie_title, movie_titles, movie_data
+    index_to_movie_id_df = pl.read_parquet(index_to_movie_id_url)
+    index_to_movie_id = index_to_movie_id_df["movieId"].to_list()
+
+    movie_id_to_index_df = pl.read_parquet(movie_id_to_index_url)
+    movie_id_to_index = dict(zip(movie_id_to_index_df["movieId"], movie_id_to_index_df["index"]))
+
+    rating_counts_df = pl.read_parquet(rating_counts_url)
+    rating_counts = dict(zip(rating_counts_df["movieId"].to_list(),
+                             rating_counts_df["count"].to_list()))
+
+    return rating_counts, index_to_movie_id, movie_id_to_index, movie_id_to_movie_title, movie_titles, movie_data
 
 
 st.title("Movie Recommendation App")
 
-movie_id_to_movie_title, movie_titles, movie_data = load_movie_data()
+rating_counts, index_to_movie_id, movie_id_to_index, movie_id_to_movie_title, movie_titles, movie_data = load_movie_data()
 user_biases, movie_biases, user_embeddings, movie_embeddings = load_model()
-data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = load_rating_data()
+# data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = load_rating_data()
 
 selected_movie = st.selectbox("Select a movie", movie_titles, index=None)
 rating = st.slider(f"Rate this movie", 0.0, 5.0, 2.5, step=0.5)
@@ -92,7 +96,7 @@ if recommendation_request and selected_movie is not None:
             continue
 
         # Filter out movies with too few ratings in the training set
-        if len(data_by_movie[n]) < 100:
+        if rating_counts[index_to_movie_id[n]] < 100:
             continue
         
         predicted_ratings[n] = np.dot(dummy_user_embedding, movie_embeddings[n])\
