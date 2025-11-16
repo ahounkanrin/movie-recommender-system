@@ -5,7 +5,6 @@ import os
 import random
 
 from huggingface_hub import hf_hub_download
-from data_parser import parse_data
 
 random.seed(42)
 np.random.seed(42) 

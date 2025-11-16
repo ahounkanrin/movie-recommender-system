@@ -4,3 +4,4 @@ lecture_notes/
 outputs/
 __pycache__/
 models/
+.env
