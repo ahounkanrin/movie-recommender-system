@@ -70,7 +70,8 @@ def get_movie_details_from_tmdb(movie_ids, language, api_key=TMDB_API_KEY):
 
 @st.cache_resource
 def load_movie_data():
-    movie_data_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/movies.parquet"
+    # movie_data_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/movies.parquet"
+    movie_data_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/filtered_movies.parquet"
     index_to_movie_id_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/index_to_movie_id.parquet"
     movie_id_to_index_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/movie_id_to_index.parquet"
     rating_counts_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/rating_counts.parquet"
@@ -112,7 +113,7 @@ user_biases, movie_biases, user_embeddings, movie_embeddings = load_model()
 
 selected_movie = st.selectbox("Select a movie you like", movie_titles, index=None)
 rating = st.slider(f"How would you rate this movie? (0 - 5 stars)", 0.0, 5.0, 2.5, step=0.5)
-selected_language = st.selectbox("Select language",
+selected_language = st.selectbox("Select a language",
                                  options=["fr-FR", "en-EN", "de-DE", "es-ES", "it-IT", "zh-CN", "ar-AR"],
                                  index=0)
 recommendation_request = st.button("Show recommendations")
@@ -122,6 +123,7 @@ if recommendation_request and selected_movie is not None:
     
     movie_id = movie_data.filter(pl.col("title") == selected_movie).select("movieId").to_series().to_list()[0]
     movie_index = movie_id_to_index[movie_id]
+    
 
     dummy_user_bias = 0. 
     dummy_user_embedding = np.random.normal(loc=0, scale=np.sqrt(1/embedding_dim), size=(embedding_dim))
