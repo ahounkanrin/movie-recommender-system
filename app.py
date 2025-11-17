@@ -113,9 +113,23 @@ user_biases, movie_biases, user_embeddings, movie_embeddings = load_model()
 
 selected_movie = st.selectbox("Select a movie you like", movie_titles, index=None)
 rating = st.slider(f"How would you rate this movie? (0 - 5 stars)", 0.0, 5.0, 2.5, step=0.5)
-selected_language = st.selectbox("Select a language",
-                                 options=["fr-FR", "en-EN", "de-DE", "es-ES", "it-IT", "zh-CN", "ar-AR"],
-                                 index=0)
+
+languages = {
+    "en-US": "🇺🇸 English (US)",
+    "fr-FR": "🇫🇷 French",
+    "es-ES": "🇪🇸 Spanish",
+    "de-DE": "🇩🇪 German",
+    "ar-SA": "🇸🇦 Arabic",
+    "zh-CN": "🇨🇳 Chinese",
+    "hi-IN": "🇮🇳 Hindi",
+}
+st.sidebar.title("Settings")
+selected_language = st.sidebar.selectbox("Language", list(languages.keys()),
+                                         index=0,
+                                         format_func=lambda x: languages[x])
+# selected_language = st.selectbox("Select a language",
+#                                  options=["fr-FR", "en-EN", "de-DE", "es-ES", "it-IT", "zh-CN", "ar-AR"],
+#                                  index=0)
 recommendation_request = st.button("Show recommendations")
 
 num_movies = len(movie_biases)
