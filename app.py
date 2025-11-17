@@ -36,24 +36,42 @@ def load_model():
     return user_biases, movie_biases, user_embeddings, movie_embeddings
 
 @st.cache_data(show_spinner=False)
-def get_poster_url(movie_ids, api_key=TMDB_API_KEY):
+def get_movie_details_from_tmdb(movie_ids, language, api_key=TMDB_API_KEY):
     base_poster_url = "https://image.tmdb.org/t/p/w500"  # w500 is the image width
     poster_urls = {}
+    movie_titles = {}
+    release_years = {}
 
     for tmdb_id in movie_ids:
         url = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
-        params = {"api_key": api_key, "language": "en-US"}
+        # params = {"api_key": api_key, "language": "en-US"}
+        params = {"api_key": api_key, "language": language}
         response = requests.get(url, params=params)
         movie_details = response.json()
     
-        post_path = movie_details.get("poster_path", None)
-        if post_path is not None:
-            poster_urls[tmdb_id] = base_poster_url + post_path
+        poster_path = movie_details.get("poster_path", None)
+        movie_title = movie_details.get("title", None)
+        release_date = movie_details.get("release_date", None)
+        release_year = release_date.split("-")[0]
+
+        movie_titles[tmdb_id] = movie_title
+        release_years[tmdb_id] = release_year
+
+        if poster_path is not None:
+            poster_urls[tmdb_id] = base_poster_url + poster_path
         else:
             poster_urls[tmdb_id] = "https://dummyimage.com/200x300/cccccc/000000&text=No+Image"
 
-    return poster_urls
+    return poster_urls, movie_titles, release_years
 
+@st.cache_data(show_spinner=False)
+def get_languages_list_from_tmdb(api_key=TMDB_API_KEY):
+    url = "https://api.themoviedb.org/3/configuration/languages"
+    params = {"api_key": TMDB_API_KEY}
+    response = requests.get(url, params=params)
+    languages_data = response.json()
+    languages_list = [f"{lang['iso_639_1']}-{lang['iso_639_1'].upper()}" for lang in languages_data]
+    return languages_list
 
 @st.cache_resource
 def load_movie_data():
@@ -95,8 +113,11 @@ st.title("Movie Recommendation App")
 
 user_biases, movie_biases, user_embeddings, movie_embeddings = load_model()
 
+languanges_list = get_languages_list_from_tmdb()
+
 selected_movie = st.selectbox("Select a movie you like", movie_titles, index=None)
 rating = st.slider(f"How would you rate this movie? (0 - 5 stars)", 0.0, 5.0, 2.5, step=0.5)
+selected_language = st.selectbox("Select recommendation language (e.g. en-US, fr-FR, ar-AR)", languanges_list, index=0)
 recommendation_request = st.button("Show recommendations")
 
 num_movies = len(movie_biases)
@@ -133,15 +154,20 @@ if recommendation_request and selected_movie is not None:
     topk_movies_indices = ranked_movies[::-1]
 
     topk_movies_ids = [index_to_movie_id[x] for x in topk_movies_indices]
-    topk_movies_titles = [movie_id_to_movie_title[x] for x in topk_movies_ids]
+    # topk_movies_titles = [movie_id_to_movie_title[x] for x in topk_movies_ids]
 
     tmdb_ids = [ml_id_to_tmdb_id[x] for x in topk_movies_ids]
 
-    poster_urls_dict = get_poster_url(tmdb_ids)
+    poster_urls_dict, movie_titles_dict, release_years_dict = get_movie_details_from_tmdb(tmdb_ids,
+                                                                                          language=selected_language)
     poster_urls = [poster_urls_dict[x] for x in tmdb_ids]
+    topk_movies_titles = [movie_titles_dict[x] for x in tmdb_ids]
+    topk_release_years = [release_years_dict[x] for x in tmdb_ids]
 
     for i in range(0, len(poster_urls), num_columns):
         cols = st.columns(num_columns)
         for j, col in enumerate(cols):
             if i + j < len(poster_urls):
-                col.image(poster_urls[i+j], caption=topk_movies_titles[i+j], width="stretch")
+                col.image(poster_urls[i+j],
+                          caption=f"{topk_movies_titles[i+j]} ({topk_release_years[i+j]})",
+                          width="stretch")
