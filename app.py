@@ -52,7 +52,11 @@ def get_movie_details_from_tmdb(movie_ids, language, api_key=TMDB_API_KEY):
         poster_path = movie_details.get("poster_path", None)
         movie_title = movie_details.get("title", None)
         release_date = movie_details.get("release_date", None)
-        release_year = release_date.split("-")[0]
+
+        if release_date is not None:
+            release_year = release_date.split("-")[0]
+        else:
+            release_year = None
 
         movie_titles[tmdb_id] = movie_title
         release_years[tmdb_id] = release_year
@@ -154,7 +158,7 @@ if recommendation_request and selected_movie is not None:
     topk_movies_indices = ranked_movies[::-1]
 
     topk_movies_ids = [index_to_movie_id[x] for x in topk_movies_indices]
-    # topk_movies_titles = [movie_id_to_movie_title[x] for x in topk_movies_ids]
+    topk_movies_titles_ml = [movie_id_to_movie_title[x] for x in topk_movies_ids]
 
     tmdb_ids = [ml_id_to_tmdb_id[x] for x in topk_movies_ids]
 
@@ -168,6 +172,11 @@ if recommendation_request and selected_movie is not None:
         cols = st.columns(num_columns)
         for j, col in enumerate(cols):
             if i + j < len(poster_urls):
-                col.image(poster_urls[i+j],
-                          caption=f"{topk_movies_titles[i+j]} ({topk_release_years[i+j]})",
-                          width="stretch")
+                if topk_release_years[i+j] is not None:
+                    col.image(poster_urls[i+j],
+                            caption=f"{topk_movies_titles[i+j]} ({topk_release_years[i+j]})",
+                            width="stretch")
+                else:
+                    col.image(poster_urls[i+j],
+                            caption=f"{topk_movies_titles_ml[i+j]}",
+                            width="stretch")
