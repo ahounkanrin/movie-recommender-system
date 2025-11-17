@@ -151,8 +151,6 @@ def train(data_by_user_user_index_offsets_train,
         train_errors[epoch] = rmse_train
         test_errors[epoch] = rmse_test
 
-        # print(f"Epoch: {epoch+1} \t train_loss = {loss_train:.4f} \t test_loss = {loss_test:.4f}\
-        #     \t mse_train = {rmse_train:.4f} \t mse_test = {rmse_test:.4f}")
         print("Epoch:", epoch+1, "\t train_loss = ", loss_train, "\t test_loss = ", loss_test,\
             "\t rmse_train = ",rmse_train, "\t rmse_test = ", rmse_test)
     
@@ -180,7 +178,6 @@ def plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)
     ax.legend()
     ax.set_xlabel("Epoch")
     ax.set_ylabel("RMSE")
-    # plt.suptitle("Mean squared errors")
     ax.grid(True)
     plt.savefig(f"./outputs/plots/bias_and_embeddding_model_rmse_32m_embed{embedding_dim}.pdf")
     plt.close()

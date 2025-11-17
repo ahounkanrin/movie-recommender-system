@@ -4,9 +4,6 @@ import os
 import random
 import pickle
 
-from data_parser import parse_data
-from matplotlib import pyplot as plt
-
 
 random.seed(42)
 np.random.seed(42) 
@@ -26,7 +23,6 @@ DATA_DIR = "./data/ml-32m"
 
 def load_model():
     model = np.load(os.path.join(MODEL_DIR, f"model_embeding_dim_{embedding_dim}_32m.npz"))
-    # model = np.load(os.path.join(MODEL_DIR, f"model_embeding_dim_{embedding_dim}_32m_use_val_data.npz"))
     user_biases = model["user_biases"]
     movie_biases = model["movie_biases"]
     user_embeddings = model["user_embeddings"]
@@ -85,12 +81,8 @@ num_movies = len(movie_biases)
 predicted_ratings = - np.inf * np.ones(shape=(num_movies))
 
 for n in range(num_movies):
-    # Do not recommend the same movie
-    if n  == movie_index:
-        continue
-
-    # Filter out movies with too few ratings in the training set
-    if len(data_by_movie[n]) < 200:
+    # Do not recommend the same movie or  movies with too few ratings
+    if n  == movie_index or len(data_by_movie[n]) < 100:
         continue
     
     predicted_ratings[n] = np.dot(dummy_user_embedding, movie_embeddings[n])\

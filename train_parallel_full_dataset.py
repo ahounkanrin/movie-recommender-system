@@ -13,7 +13,7 @@ lambda_ = 0.1
 gamma_ = 0.1
 tau_ = 0.1
 num_epochs = 20
-embedding_dim = 2
+embedding_dim = 8
 
 I = np.eye(embedding_dim)
 
