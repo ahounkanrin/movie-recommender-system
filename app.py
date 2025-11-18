@@ -114,8 +114,8 @@ selected_movie = st.selectbox("Select a movie you like", movie_titles, index=Non
 rating = st.slider(f"How would you rate this movie? (0 - 5 stars)", 0.0, 5.0, 2.5, step=0.5)
 
 languages = {
-    "fr-FR": "🇫🇷 French",
     "en-US": "🇺🇸 English",
+    "fr-FR": "🇫🇷 French",
     "es-ES": "🇪🇸 Spanish",
     "de-DE": "🇩🇪 German",
     "ar-SA": "🇸🇦 Arabic",
@@ -189,13 +189,14 @@ if recommendation_request and selected_movie is not None:
                             width="stretch")
 
 # TMDB attributions
+#https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_2-d537fb228cf3ded904ef09b136fe3fec72548ebc1fea3fbbd1ad9e36364db38b.svg
 st.markdown("---")
 st.markdown(
     """
     <div style="text-align:center; opacity:0.85; font-size:14px;">
         <p>This application uses the TMDB API but is not endorsed or certified by TMDB.</p>
-        <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_2-d537fb228cf3ded904ef09b136fe3fec72548ebc1fea3fbbd1ad9e36364db38b.svg" 
-             alt="TMDB Logo" width="120">
+        <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_long_2-9665a76b1ae401a510ec1e0ca40ddcb3b0cfe45f1d51b77a308fea0845885648.svg" 
+             alt="TMDB Logo" width="300">
     </div>
     """,
     unsafe_allow_html=True,
