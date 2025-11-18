@@ -70,7 +70,6 @@ def get_movie_details_from_tmdb(movie_ids, language, api_key=TMDB_API_KEY):
 
 @st.cache_resource
 def load_movie_data():
-    # movie_data_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/movies.parquet"
     movie_data_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/filtered_movies.parquet"
     index_to_movie_id_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/index_to_movie_id.parquet"
     movie_id_to_index_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/movie_id_to_index.parquet"
@@ -188,3 +187,17 @@ if recommendation_request and selected_movie is not None:
                     col.image(poster_urls[i+j],
                             caption=f"{topk_movies_titles_ml[i+j]}",
                             width="stretch")
+
+# TMDB attributions
+st.markdown("---")
+st.markdown(
+    """
+    <div style="text-align:center; opacity:0.85; font-size:14px;">
+        <p>This application uses the TMDB API but is not endorsed or certified by TMDB.</p>
+        <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_2-d537fb228cf3ded904ef09b136fe3fec72548ebc1fea3fbbd1ad9e36364db38b.svg" 
+             alt="TMDB Logo" width="120">
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
