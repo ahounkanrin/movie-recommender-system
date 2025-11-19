@@ -20,7 +20,7 @@ num_recommendations = 10
 num_columns = 5
 
 TMDB_API_KEY = st.secrets["TMDB_API_KEY"]
-MODEL_DIR = "./deployed_model"
+MODEL_DIR = "deployed_model"
 
 @st.cache_resource
 def load_model():
@@ -65,11 +65,11 @@ def get_movie_details_from_tmdb(movie_ids, language, api_key=TMDB_API_KEY):
 
 @st.cache_resource
 def load_movie_data():
-    movie_data_path = "./processed_data/filtered_movies.parquet"
-    index_to_movie_id_path = "./processed_data/index_to_movie_id.parquet"
-    movie_id_to_index_path = "./processed_data/movie_id_to_index.parquet"
-    rating_counts_path = "./processed_data/rating_counts.parquet"
-    movie_id_links_path = "./processed_data/links.parquet"
+    movie_data_path = "processed_data/filtered_movies.parquet"
+    index_to_movie_id_path = "processed_data/index_to_movie_id.parquet"
+    movie_id_to_index_path = "processed_data/movie_id_to_index.parquet"
+    rating_counts_path = "processed_data/rating_counts.parquet"
+    movie_id_links_path = "processed_data/links.parquet"
 
     movie_data = pl.read_parquet(movie_data_path)
     movie_id_to_movie_title = {row["movieId"]: row["title"] for row in movie_data.iter_rows(named=True)}
