@@ -29,11 +29,10 @@ def load_model():
     return movie_biases, movie_embeddings
 
 def load_movie_data():
-    movie_data_url = "./processed_data/filtered_movies.parquet"
-    index_to_movie_id_url = "./processed_data/index_to_movie_id.parquet"
-    movie_id_to_index_url = "./processed_data/movie_id_to_index.parquet"
-    rating_counts_url = "./processed_data/rating_counts.parquet"
-    # movie_id_links_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/links.parquet"
+    movie_data_url = "processed_data/filtered_movies.parquet"
+    index_to_movie_id_url = "processed_data/index_to_movie_id.parquet"
+    movie_id_to_index_url = "processed_data/movie_id_to_index.parquet"
+    rating_counts_url = "processed_data/rating_counts.parquet"
 
     movie_data = pl.read_parquet(movie_data_url)
     movie_id_to_movie_title = {row["movieId"]: row["title"] for row in movie_data.iter_rows(named=True)}
@@ -59,16 +58,13 @@ movie_biases, movie_embeddings = load_model()
 movie_id_to_index, movie_id_to_movie_title,
 movie_titles, movie_data) = load_movie_data()
 
-# rating_counds, index_to_movie_id, movie_id_to_index = load_rating_data()
-# movie_id_to_movie_title, movie_titles, movie_data = process_movie_data()
-
 # movie_title = "Lord of the Rings: The Fellowship of the Ring, The (2001)"
-movie_title = "Harry Potter and the Sorcerer's Stone (a.k.a. Harry Potter and the Philosopher's Stone) (2001)"
+# movie_title = "Harry Potter and the Sorcerer's Stone (a.k.a. Harry Potter and the Philosopher's Stone) (2001)"
 # movie_title = "Love and Other Catastrophes (1996)"
 # movie_title = "Blood Diamond (2006)"
 # movie_title = "Gladiator (2000)"
 # movie_title = "Fight For Space (2016)"
-# movie_title = "Kung Fu Panda (2008)"
+movie_title = "Kung Fu Panda (2008)"
 # movie_title = "Toy Story (1995)"
 # movie_title = "Aladdin (1992)"
 

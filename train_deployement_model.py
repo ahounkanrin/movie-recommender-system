@@ -2,6 +2,7 @@ import numpy as np
 import polars as pl
 import os
 import random
+import argparse
 
 from matplotlib import pyplot as plt
 from numba import jit, prange
@@ -9,11 +10,20 @@ from numba import jit, prange
 random.seed(42)
 np.random.seed(42) 
 
-lambda_ = 0.1
-gamma_ = 0.1
-tau_ = 0.1
-num_epochs = 20
-embedding_dim = 8
+parser = argparse.ArgumentParser()
+parser.add_argument("--lambda_", type=float, default=0.1)
+parser.add_argument("--gamma_", type=float, default=0.1)
+parser.add_argument("--tau_", type=float, default=0.1)
+parser.add_argument("--num_epochs", type=int, default=20)
+parser.add_argument("--embedding_dim", type=int, default=8)
+args = parser.parse_args()
+
+# Extract Argparse arguments for Numba
+lambda_ = args.lambda_
+gamma_ = args.gamma_
+tau_ = args.tau_
+num_epochs = args.num_epochs
+embedding_dim = args.embedding_dim
 
 I = np.eye(embedding_dim)
 

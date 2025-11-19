@@ -2,18 +2,28 @@ import numpy as np
 import polars as pl
 import os
 import random
+import argparse
 
 from matplotlib import pyplot as plt
 from numba import jit, prange
 
 random.seed(42)
-np.random.seed(42) 
+np.random.seed(42)
 
-lambda_ = 0.1
-gamma_ = 0.1
-tau_ = 0.1 
-num_epochs = 20
-embedding_dim = 2
+parser = argparse.ArgumentParser()
+parser.add_argument("--lambda_", type=float, default=0.1)
+parser.add_argument("--gamma_", type=float, default=0.1)
+parser.add_argument("--tau_", type=float, default=0.1)
+parser.add_argument("--num_epochs", type=int, default=20)
+parser.add_argument("--embedding_dim", type=int, default=8)
+args = parser.parse_args()
+
+# Extract Argparse arguments for Numba
+lambda_ = args.lambda_
+gamma_ = args.gamma_
+tau_ = args.tau_
+num_epochs = args.num_epochs
+embedding_dim = args.embedding_dim
 
 I = np.eye(embedding_dim)
 
@@ -223,11 +233,5 @@ if __name__ == "__main__":
                                                                     user_embeddings,
                                                                     movie_embeddings
                                                                     )
-    
-    user_biases, user_embeddings, movie_biases, movie_embeddings = model
-
-    np.savez(f"./models/model_embeding_dim_{embedding_dim}_32m_use_val_data.npz",
-             user_biases=user_biases, user_embeddings=user_embeddings,
-             movie_biases=movie_biases, movie_embeddings=movie_embeddings)
     
     plot_errors_and_losses(train_losses, test_losses, train_errors, test_errors)

@@ -5,7 +5,6 @@ import random
 import requests
 import os
 
-from huggingface_hub import hf_hub_download
 
 random.seed(42)
 np.random.seed(42) 
@@ -103,8 +102,6 @@ st.title("Movie Recommendation App")
 
 movie_biases, movie_embeddings = load_model()
 
-# languanges_list = get_languages_list_from_tmdb()
-
 selected_movie = st.selectbox("Select a movie you like", movie_titles, index=None)
 rating = st.slider(f"How would you rate this movie? (0 - 5 stars)", 0.0, 5.0, 2.5, step=0.5)
 
@@ -117,8 +114,10 @@ languages = {
     "zh-CN": "🇨🇳 Chinese",
     "hi-IN": "🇮🇳 Hindi",
 }
+
 st.sidebar.title("Settings")
-selected_language = st.sidebar.selectbox("Language", list(languages.keys()),
+selected_language = st.sidebar.selectbox("Language",
+                                         list(languages.keys()),
                                          index=0,
                                          format_func=lambda x: languages[x])
 
@@ -184,7 +183,6 @@ if recommendation_request and selected_movie is not None:
                             width="stretch")
 
 # TMDB attributions
-#https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_2-d537fb228cf3ded904ef09b136fe3fec72548ebc1fea3fbbd1ad9e36364db38b.svg
 st.markdown("---")
 st.markdown(
     """
