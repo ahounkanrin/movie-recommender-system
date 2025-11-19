@@ -3,6 +3,7 @@ import numpy as np
 import polars as pl
 import random
 import requests
+import os
 
 from huggingface_hub import hf_hub_download
 
@@ -19,32 +20,26 @@ num_recommendations = 10
 num_columns = 5
 
 TMDB_API_KEY = st.secrets["TMDB_API_KEY"]
-
+MODEL_DIR = "./deployed_model"
 
 @st.cache_resource
 def load_model():
-    model_path = hf_hub_download(
-    repo_id="ahounkanrin/ml-32m",
-    filename=f"model_embeding_dim_{embedding_dim}_32m.npz",
-    repo_type="dataset")
+    model_path = os.path.join(MODEL_DIR, f"model.npz")
     model = np.load(model_path)
-    user_biases = model["user_biases"]
     movie_biases = model["movie_biases"]
-    user_embeddings = model["user_embeddings"]
     movie_embeddings = model["movie_embeddings"]
 
-    return user_biases, movie_biases, user_embeddings, movie_embeddings
+    return movie_biases, movie_embeddings
 
 @st.cache_data(show_spinner=False)
 def get_movie_details_from_tmdb(movie_ids, language, api_key=TMDB_API_KEY):
-    base_poster_url = "https://image.tmdb.org/t/p/w500"  # w500 is the image width
+    base_poster_url = "https://image.tmdb.org/t/p/w500"
     poster_urls = {}
     movie_titles = {}
     release_years = {}
 
     for tmdb_id in movie_ids:
         url = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
-        # params = {"api_key": api_key, "language": "en-US"}
         params = {"api_key": api_key, "language": language}
         response = requests.get(url, params=params)
         movie_details = response.json()
@@ -70,27 +65,27 @@ def get_movie_details_from_tmdb(movie_ids, language, api_key=TMDB_API_KEY):
 
 @st.cache_resource
 def load_movie_data():
-    movie_data_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/filtered_movies.parquet"
-    index_to_movie_id_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/index_to_movie_id.parquet"
-    movie_id_to_index_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/movie_id_to_index.parquet"
-    rating_counts_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/rating_counts.parquet"
-    movie_id_links_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/links.parquet"
+    movie_data_path = "./processed_data/filtered_movies.parquet"
+    index_to_movie_id_path = "./processed_data/index_to_movie_id.parquet"
+    movie_id_to_index_path = "./processed_data/movie_id_to_index.parquet"
+    rating_counts_path = "./processed_data/rating_counts.parquet"
+    movie_id_links_path = "./processed_data/links.parquet"
 
-    movie_data = pl.read_parquet(movie_data_url)
+    movie_data = pl.read_parquet(movie_data_path)
     movie_id_to_movie_title = {row["movieId"]: row["title"] for row in movie_data.iter_rows(named=True)}
     movie_titles = sorted(movie_id_to_movie_title.values())
 
-    index_to_movie_id_df = pl.read_parquet(index_to_movie_id_url)
+    index_to_movie_id_df = pl.read_parquet(index_to_movie_id_path)
     index_to_movie_id = index_to_movie_id_df["movieId"].to_list()
 
-    movie_id_to_index_df = pl.read_parquet(movie_id_to_index_url)
+    movie_id_to_index_df = pl.read_parquet(movie_id_to_index_path)
     movie_id_to_index = dict(zip(movie_id_to_index_df["movieId"], movie_id_to_index_df["index"]))
 
-    rating_counts_df = pl.read_parquet(rating_counts_url)
+    rating_counts_df = pl.read_parquet(rating_counts_path)
     rating_counts = dict(zip(rating_counts_df["movieId"].to_list(),
                              rating_counts_df["count"].to_list()))
     
-    movie_id_links_df = pl.read_parquet(movie_id_links_url)
+    movie_id_links_df = pl.read_parquet(movie_id_links_path)
     ml_id_to_tmdb_id = dict(zip(movie_id_links_df["movieId"].to_list(),
                                 movie_id_links_df["tmdbId"].to_list() 
                                 ))
@@ -106,7 +101,7 @@ st.title("Movie Recommendation App")
             movie_id_to_index, movie_id_to_movie_title,
             movie_titles, movie_data, ml_id_to_tmdb_id) = load_movie_data()
 
-user_biases, movie_biases, user_embeddings, movie_embeddings = load_model()
+movie_biases, movie_embeddings = load_model()
 
 # languanges_list = get_languages_list_from_tmdb()
 
@@ -201,4 +196,3 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-

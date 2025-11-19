@@ -16,38 +16,51 @@ num_steps = 10
 num_recommendations = 10
 I = np.eye(embedding_dim)
 
-MODEL_DIR = "./models"
+MODEL_DIR = "./deployed_model"
 DATA_DIR = "./data/ml-32m"
-# DATA_DIR = "./data/ml-25m"
 
 
 def load_model():
-    model = np.load(os.path.join(MODEL_DIR, f"model_embeding_dim_{embedding_dim}_32m.npz"))
-    user_biases = model["user_biases"]
+    model = np.load(os.path.join(MODEL_DIR, f"model.npz"))
+    # user_biases = model["user_biases"]
     movie_biases = model["movie_biases"]
-    user_embeddings = model["user_embeddings"]
+    # user_embeddings = model["user_embeddings"]
     movie_embeddings = model["movie_embeddings"]
-    return user_biases, movie_biases, user_embeddings, movie_embeddings
+    return movie_biases, movie_embeddings
 
+def load_movie_data():
+    movie_data_url = "./processed_data/filtered_movies.parquet"
+    index_to_movie_id_url = "./processed_data/index_to_movie_id.parquet"
+    movie_id_to_index_url = "./processed_data/movie_id_to_index.parquet"
+    rating_counts_url = "./processed_data/rating_counts.parquet"
+    # movie_id_links_url = "https://huggingface.co/datasets/ahounkanrin/ml-32m/resolve/main/links.parquet"
 
-def load_rating_data():
-    with open("./data/processed/data_ml_32m.pkl", "rb") as f:
-        rating_data = pickle.load(f)
-
-    _, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = rating_data
-    return data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index
-
-
-def process_movie_data():
-    movie_data = pl.read_csv(os.path.join(DATA_DIR, "movies.csv"))
+    movie_data = pl.read_parquet(movie_data_url)
     movie_id_to_movie_title = {row["movieId"]: row["title"] for row in movie_data.iter_rows(named=True)}
     movie_titles = sorted(movie_id_to_movie_title.values())
-    return movie_id_to_movie_title, movie_titles, movie_data
 
+    index_to_movie_id_df = pl.read_parquet(index_to_movie_id_url)
+    index_to_movie_id = index_to_movie_id_df["movieId"].to_list()
 
-user_biases, movie_biases, user_embeddings, movie_embeddings = load_model()
-data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = load_rating_data()
-movie_id_to_movie_title, movie_titles, movie_data = process_movie_data()
+    movie_id_to_index_df = pl.read_parquet(movie_id_to_index_url)
+    movie_id_to_index = dict(zip(movie_id_to_index_df["movieId"], movie_id_to_index_df["index"]))
+
+    rating_counts_df = pl.read_parquet(rating_counts_url)
+    rating_counts = dict(zip(rating_counts_df["movieId"].to_list(),
+                             rating_counts_df["count"].to_list()))
+    
+    return (rating_counts, index_to_movie_id,
+            movie_id_to_index, movie_id_to_movie_title,
+            movie_titles, movie_data)
+
+movie_biases, movie_embeddings = load_model()
+
+(rating_counts, index_to_movie_id,
+movie_id_to_index, movie_id_to_movie_title,
+movie_titles, movie_data) = load_movie_data()
+
+# rating_counds, index_to_movie_id, movie_id_to_index = load_rating_data()
+# movie_id_to_movie_title, movie_titles, movie_data = process_movie_data()
 
 # movie_title = "Lord of the Rings: The Fellowship of the Ring, The (2001)"
 movie_title = "Harry Potter and the Sorcerer's Stone (a.k.a. Harry Potter and the Philosopher's Stone) (2001)"
@@ -82,14 +95,14 @@ predicted_ratings = - np.inf * np.ones(shape=(num_movies))
 
 for n in range(num_movies):
     # Do not recommend the same movie or  movies with too few ratings
-    if n  == movie_index or len(data_by_movie[n]) < 100:
+    if n  == movie_index or rating_counts[index_to_movie_id[n]] < 100:
         continue
     
     predicted_ratings[n] = np.dot(dummy_user_embedding, movie_embeddings[n])\
                             + 0.05 * movie_biases[n]
 
-ranked_movies = np.flip(np.argsort(predicted_ratings))
-topk_movies_indices = ranked_movies[:num_recommendations]
+ranked_movies = np.argsort(predicted_ratings)[-num_recommendations:]
+topk_movies_indices = ranked_movies[::-1]
 
 topk_movies_ids = [index_to_movie_id[x] for x in topk_movies_indices]
 topk_movies_titles = [movie_id_to_movie_title[x] for x in topk_movies_ids]
