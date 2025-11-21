@@ -23,8 +23,10 @@ MODEL_DIR = "deployed_model"
 
 @st.cache_resource
 def load_model():
-    model_path = os.path.join(MODEL_DIR, f"model.npz")
-    model = np.load(model_path)
+    # model_path = os.path.join(MODEL_DIR, f"model.npz")
+    # model = np.load(model_path)
+    model = np.load(os.path.join("models", f"model_with_feature_embeding_dim_{embedding_dim}_32m.npz"))
+
     movie_biases = model["movie_biases"]
     movie_embeddings = model["movie_embeddings"]
 
@@ -147,8 +149,8 @@ if recommendation_request and selected_movie is not None:
     predicted_ratings = -np.inf * np.ones(shape=(num_movies))
 
     for n in range(num_movies):
-        # Do not recommend the same movie and movies with too few ratings
-        if n  == movie_index or rating_counts[index_to_movie_id[n]] < 100:
+        # Do not recommend movies with too few ratings
+        if rating_counts[index_to_movie_id[n]] < 100:
             continue
         
         predicted_ratings[n] = np.dot(dummy_user_embedding, movie_embeddings[n])\

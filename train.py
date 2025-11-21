@@ -15,14 +15,11 @@ embedding_dim = 16
 
 I = np.eye(embedding_dim)
 
-# DATA_DIR = "./data/ml-latest-small"
-# DATA_DIR = "./data/ml-25m"
 DATA_DIR = "./data/ml-32m"
 data = pl.read_csv(os.path.join(DATA_DIR, "ratings.csv"))
 data = data.sort("timestamp")
 
 data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, _, _ = parse_data(data)
-# data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
 data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = chrono_split(data_by_user, data_by_movie)
 
 num_users = len(data_by_user)
@@ -98,7 +95,6 @@ for epoch in range(num_epochs):
     
     loss_train += (gamma_/2) * (np.sum(user_biases**2) + np.sum(movie_biases**2))
     loss_train += (tau_/2) * (np.linalg.norm(user_embeddings)**2 + np.linalg.norm(movie_embeddings)**2)
-    # loss_train /= rating_counter_train
     rmse_train = np.sqrt(rmse_train/rating_counter_train)
 
     # compute test loss
@@ -115,7 +111,6 @@ for epoch in range(num_epochs):
 
     loss_test += (gamma_/2) * (np.sum(user_biases**2) + np.sum(movie_biases**2))
     loss_test += (tau_/2) * (np.linalg.norm(user_embeddings)**2 + np.linalg.norm(movie_embeddings)**2)
-    # loss_test /= rating_counter_test
     rmse_test = np.sqrt(rmse_test/rating_counter_test)
     
     train_losses.append(loss_train)

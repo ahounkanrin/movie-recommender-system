@@ -2,7 +2,6 @@ import numpy as np
 import polars as pl
 import os
 import random
-import pickle
 
 
 random.seed(42)
@@ -21,7 +20,8 @@ DATA_DIR = "./data/ml-32m"
 
 
 def load_model():
-    model = np.load(os.path.join(MODEL_DIR, f"model.npz"))
+    # model = np.load(os.path.join(MODEL_DIR, f"model.npz"))
+    model = np.load(os.path.join("models", f"model_with_feature_embeding_dim_{embedding_dim}_32m.npz"))
     # user_biases = model["user_biases"]
     movie_biases = model["movie_biases"]
     # user_embeddings = model["user_embeddings"]
@@ -64,8 +64,8 @@ movie_titles, movie_data) = load_movie_data()
 # movie_title = "Blood Diamond (2006)"
 # movie_title = "Gladiator (2000)"
 # movie_title = "Fight For Space (2016)"
-movie_title = "Kung Fu Panda (2008)"
-# movie_title = "Toy Story (1995)"
+# movie_title = "Kung Fu Panda (2008)"
+movie_title = "Toy Story (1995)"
 # movie_title = "Aladdin (1992)"
 
 dummy_user_rating = 5
