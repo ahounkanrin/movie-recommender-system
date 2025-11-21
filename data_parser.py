@@ -203,67 +203,67 @@ if __name__ == "__main__":
              num_features=num_features
              )
 
-    ## data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
+    # data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = random_split(data_by_user, data_by_movie)
 
-    # index_to_movie_id_df = pl.DataFrame({
-    #     "index": list((range(len(index_to_movie_id)))),
-    #     "movieId": index_to_movie_id
-    # })
+    index_to_movie_id_df = pl.DataFrame({
+        "index": list((range(len(index_to_movie_id)))),
+        "movieId": index_to_movie_id
+    })
 
-    # movie_id_to_index_df = pl.DataFrame({
-    #     "movieId": list(movie_id_to_index.keys()),
-    #     "index": list(movie_id_to_index.values())
-    # })
+    movie_id_to_index_df = pl.DataFrame({
+        "movieId": list(movie_id_to_index.keys()),
+        "index": list(movie_id_to_index.values())
+    })
 
     
-    # index_to_movie_id_df.write_parquet("./data/processed/index_to_movie_id.parquet")
-    # movie_id_to_index_df.write_parquet("./data/processed/movie_id_to_index.parquet")
+    index_to_movie_id_df.write_parquet("./data/processed/index_to_movie_id.parquet")
+    movie_id_to_index_df.write_parquet("./data/processed/movie_id_to_index.parquet")
 
 
-    # rating_counts_df = data.group_by("movieId").len(name="count")
-    # rating_counts_df.write_parquet("./data/processed/rating_counts.parquet")
+    rating_counts_df = data.group_by("movieId").len(name="count")
+    rating_counts_df.write_parquet("./data/processed/rating_counts.parquet")
 
-    # num_users = len(data_by_user)
-    # num_movies = len(data_by_movie)
+    num_users = len(data_by_user)
+    num_movies = len(data_by_movie)
 
-    # # plot_rating_distribution(data_by_user_train, data_by_movie_train)
-    # # plot_rating_distribution(data_by_user_test, data_by_movie_test)
+    # plot_rating_distribution(data_by_user_train, data_by_movie_train)
+    # plot_rating_distribution(data_by_user_test, data_by_movie_test)
 
-    # processed_data = data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index
+    processed_data = data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index
 
-    # with open("./data/processed/data_ml_32m.pkl", "wb") as f:
-    #     pickle.dump(processed_data, f)
+    with open("./data/processed/data_ml_32m.pkl", "wb") as f:
+        pickle.dump(processed_data, f)
 
-    # data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = chrono_split(data_by_user, data_by_movie)
+    data_by_user_train, data_by_user_test, data_by_movie_train, data_by_movie_test = chrono_split(data_by_user, data_by_movie)
 
-    # data_by_user_user_index_offsets_train, data_by_user_movie_indices_train, data_by_user_ratings_train = flatten_user_data(data_by_user_train)
-    # data_by_user_user_index_offsets_test, data_by_user_movie_indices_test, data_by_user_ratings_test = flatten_user_data(data_by_user_test)
-    # data_by_movie_movie_index_offsets_train, data_by_movie_user_indices_train, data_by_movie_ratings_train = flatten_movie_data(data_by_movie_train)
+    data_by_user_user_index_offsets_train, data_by_user_movie_indices_train, data_by_user_ratings_train = flatten_user_data(data_by_user_train)
+    data_by_user_user_index_offsets_test, data_by_user_movie_indices_test, data_by_user_ratings_test = flatten_user_data(data_by_user_test)
+    data_by_movie_movie_index_offsets_train, data_by_movie_user_indices_train, data_by_movie_ratings_train = flatten_movie_data(data_by_movie_train)
 
-    # np.savez("./data/processed/flat_data_32m_train.npz",
-    #          data_by_user_user_index_offsets_train=data_by_user_user_index_offsets_train,
-    #          data_by_user_movie_indices_train=data_by_user_movie_indices_train,
-    #          data_by_user_ratings_train=data_by_user_ratings_train,
-    #          data_by_user_user_index_offsets_test=data_by_user_user_index_offsets_test,
-    #          data_by_user_movie_indices_test=data_by_user_movie_indices_test,
-    #          data_by_user_ratings_test=data_by_user_ratings_test,
-    #          data_by_movie_movie_index_offsets_train=data_by_movie_movie_index_offsets_train,
-    #          data_by_movie_user_indices_train=data_by_movie_user_indices_train,
-    #          data_by_movie_ratings_train=data_by_movie_ratings_train,
-    #          num_users=num_users,
-    #          num_movies=num_movies
-    #          )
+    np.savez("./data/processed/flat_data_32m_train.npz",
+             data_by_user_user_index_offsets_train=data_by_user_user_index_offsets_train,
+             data_by_user_movie_indices_train=data_by_user_movie_indices_train,
+             data_by_user_ratings_train=data_by_user_ratings_train,
+             data_by_user_user_index_offsets_test=data_by_user_user_index_offsets_test,
+             data_by_user_movie_indices_test=data_by_user_movie_indices_test,
+             data_by_user_ratings_test=data_by_user_ratings_test,
+             data_by_movie_movie_index_offsets_train=data_by_movie_movie_index_offsets_train,
+             data_by_movie_user_indices_train=data_by_movie_user_indices_train,
+             data_by_movie_ratings_train=data_by_movie_ratings_train,
+             num_users=num_users,
+             num_movies=num_movies
+             )
     
-    # data_by_user_user_index_offsets_train, data_by_user_movie_indices_train, data_by_user_ratings_train = flatten_user_data(data_by_user)
-    # data_by_movie_movie_index_offsets_train, data_by_movie_user_indices_train, data_by_movie_ratings_train = flatten_movie_data(data_by_movie)
+    data_by_user_user_index_offsets_train, data_by_user_movie_indices_train, data_by_user_ratings_train = flatten_user_data(data_by_user)
+    data_by_movie_movie_index_offsets_train, data_by_movie_user_indices_train, data_by_movie_ratings_train = flatten_movie_data(data_by_movie)
 
-    # np.savez("./data/processed/flat_data_32m_train_full.npz",
-    #          data_by_user_user_index_offsets_train=data_by_user_user_index_offsets_train,
-    #          data_by_user_movie_indices_train=data_by_user_movie_indices_train,
-    #          data_by_user_ratings_train=data_by_user_ratings_train,
-    #          data_by_movie_movie_index_offsets_train=data_by_movie_movie_index_offsets_train,
-    #          data_by_movie_user_indices_train=data_by_movie_user_indices_train,
-    #          data_by_movie_ratings_train=data_by_movie_ratings_train,
-    #          num_users=num_users,
-    #          num_movies=num_movies
-    #          )
+    np.savez("./data/processed/flat_data_32m_train_full.npz",
+             data_by_user_user_index_offsets_train=data_by_user_user_index_offsets_train,
+             data_by_user_movie_indices_train=data_by_user_movie_indices_train,
+             data_by_user_ratings_train=data_by_user_ratings_train,
+             data_by_movie_movie_index_offsets_train=data_by_movie_movie_index_offsets_train,
+             data_by_movie_user_indices_train=data_by_movie_user_indices_train,
+             data_by_movie_ratings_train=data_by_movie_ratings_train,
+             num_users=num_users,
+             num_movies=num_movies
+             )
