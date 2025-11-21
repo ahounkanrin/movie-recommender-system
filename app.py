@@ -23,9 +23,8 @@ MODEL_DIR = "deployed_model"
 
 @st.cache_resource
 def load_model():
-    # model_path = os.path.join(MODEL_DIR, f"model.npz")
-    # model = np.load(model_path)
-    model = np.load(os.path.join("models", f"model_with_feature_embeding_dim_{embedding_dim}_32m.npz"))
+    model_path = os.path.join(MODEL_DIR, f"model.npz")
+    model = np.load(model_path)
 
     movie_biases = model["movie_biases"]
     movie_embeddings = model["movie_embeddings"]
