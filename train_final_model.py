@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--lambda_", type=float, default=0.1)
 parser.add_argument("--gamma_", type=float, default=0.1)
 parser.add_argument("--tau_", type=float, default=0.1)
-parser.add_argument("--num_epochs", type=int, default=20)
+parser.add_argument("--num_epochs", type=int, default=50)
 parser.add_argument("--embedding_dim", type=int, default=8)
 args = parser.parse_args()
 
@@ -47,9 +47,7 @@ def train(data_by_user_user_index_offsets_train,
             ):
     
     train_losses = np.zeros(shape=(num_epochs)) 
-    test_losses = np.zeros(shape=(num_epochs))
     train_errors = np.zeros(shape=(num_epochs))
-    test_errors = np.zeros(shape=(num_epochs))
 
     for epoch in range(num_epochs):
         
@@ -223,22 +221,22 @@ if __name__ == "__main__":
 
 
     train_losses, train_errors, model =  train(data_by_user_user_index_offsets_train, 
-                                                                    data_by_user_movie_indices_train,
-                                                                    data_by_user_ratings_train,
-                                                                    data_by_movie_movie_index_offsets_train,
-                                                                    data_by_movie_user_indices_train,
-                                                                    data_by_movie_ratings_train,
-                                                                    num_users,
-                                                                    num_movies,
-                                                                    user_biases,
-                                                                    movie_biases,
-                                                                    user_embeddings,
-                                                                    movie_embeddings,
-                                                                    movie_feature_index_offsets,
-                                                                    feature_indices,
-                                                                    num_features,
-                                                                    feature_embeddings
-                                                                    )
+                                                data_by_user_movie_indices_train,
+                                                data_by_user_ratings_train,
+                                                data_by_movie_movie_index_offsets_train,
+                                                data_by_movie_user_indices_train,
+                                                data_by_movie_ratings_train,
+                                                num_users,
+                                                num_movies,
+                                                user_biases,
+                                                movie_biases,
+                                                user_embeddings,
+                                                movie_embeddings,
+                                                movie_feature_index_offsets,
+                                                feature_indices,
+                                                num_features,
+                                                feature_embeddings
+                                                )
     
     user_biases, user_embeddings, movie_biases, movie_embeddings, feature_embeddings = model
 
