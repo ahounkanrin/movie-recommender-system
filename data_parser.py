@@ -187,8 +187,8 @@ if __name__ == "__main__":
 
     movie_data = pl.read_csv(os.path.join(DATA_DIR, "movies.csv"))
 
-    # filtered_movie_data = movie_data.filter(pl.col("movieId").is_in(data["movieId"].unique().implode()))
-    # filtered_movie_data.write_parquet("./data/processed/filtered_movies.parquet")
+    filtered_movie_data = movie_data.filter(pl.col("movieId").is_in(data["movieId"].unique().implode()))
+    filtered_movie_data.write_parquet("./data/processed/filtered_movies.parquet")
     
     data_by_user, data_by_movie, index_to_user_id, index_to_movie_id, user_id_to_index, movie_id_to_index = parse_data(data)
 

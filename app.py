@@ -23,9 +23,7 @@ MODEL_DIR = "deployed_model"
 
 @st.cache_resource
 def load_model():
-    model_path = os.path.join(MODEL_DIR, f"model.npz")
-    model = np.load(model_path)
-
+    model = np.load(os.path.join(MODEL_DIR, f"model.npz"))
     movie_biases = model["movie_biases"]
     movie_embeddings = model["movie_embeddings"]
 
@@ -41,8 +39,12 @@ def get_movie_details_from_tmdb(movie_ids, language, api_key=TMDB_API_KEY):
     for tmdb_id in movie_ids:
         url = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
         params = {"api_key": api_key, "language": language}
-        response = requests.get(url, params=params)
-        movie_details = response.json()
+        try:
+            response = requests.get(url, params=params)
+            movie_details = response.json()
+        except requests.exceptions.RequestException:
+            st.error("Error contacting TMDB API. Please try again later.")
+            st.stop()
     
         poster_path = movie_details.get("poster_path", None)
         movie_title = movie_details.get("title", None)

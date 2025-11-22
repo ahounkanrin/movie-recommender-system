@@ -18,7 +18,7 @@ This recommender system uses two main data sources:
 | **`data_parser.py`** | Script for processing the MovieLens data |
 | **`train.py`** | Trains the recommendation model |
 | **`train_parallel.py`** | A parallelised and JIT-optimised version of `train.py` (using Numba) |
-| **`train_with_genres_features.py`** | Adds movie genres embeddings to the the model |
+| **`train_with_genres_features.py`** | Trains with movie genres embeddings added to the model |
 | **`train_final_model.py`** | Trains the deployed model on the entire data available |
 | **`make_recommendation.py`** | Makes recommendations for a given user |
 | **`app.py`** | Streamlit application file |

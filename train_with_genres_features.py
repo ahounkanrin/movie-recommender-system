@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--lambda_", type=float, default=0.1)
 parser.add_argument("--gamma_", type=float, default=0.1)
 parser.add_argument("--tau_", type=float, default=0.1)
-parser.add_argument("--num_epochs", type=int, default=50)
+parser.add_argument("--num_epochs", type=int, default=60)
 parser.add_argument("--embedding_dim", type=int, default=8)
 args = parser.parse_args()
 

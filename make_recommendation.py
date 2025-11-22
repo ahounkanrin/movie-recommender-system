@@ -9,7 +9,7 @@ np.random.seed(42)
 
 lambda_ = 0.1
 gamma_ = 0.1
-tau_ = 2.0
+tau_ = 0.1
 embedding_dim = 8
 num_steps = 10
 num_recommendations = 10
@@ -20,11 +20,8 @@ DATA_DIR = "./data/ml-32m"
 
 
 def load_model():
-    # model = np.load(os.path.join(MODEL_DIR, f"model.npz"))
-    model = np.load(os.path.join("models", f"model_with_feature_embeding_dim_{embedding_dim}_32m.npz"))
-    # user_biases = model["user_biases"]
+    model = np.load(os.path.join(MODEL_DIR, f"model.npz"))
     movie_biases = model["movie_biases"]
-    # user_embeddings = model["user_embeddings"]
     movie_embeddings = model["movie_embeddings"]
     return movie_biases, movie_embeddings
 
@@ -90,8 +87,8 @@ num_movies = len(movie_biases)
 predicted_ratings = - np.inf * np.ones(shape=(num_movies))
 
 for n in range(num_movies):
-    # Do not recommend the same movie or  movies with too few ratings
-    if n  == movie_index or rating_counts[index_to_movie_id[n]] < 100:
+    # Do not recommend movies with too few ratings
+    if rating_counts[index_to_movie_id[n]] < 100:
         continue
     
     predicted_ratings[n] = np.dot(dummy_user_embedding, movie_embeddings[n])\
