@@ -2,7 +2,7 @@
 
 This repository contains the code for building a movie recommender system deployed as an interactive web application with **Streamlit**.
 
-The Model uses matrix factorisation and is optimised using alternating least square.
+The recommender system uses a matrix factorization model with Alternating Least Squares.
 
 ## Data Sources
 
@@ -17,7 +17,7 @@ This recommender system uses two main data sources:
 | :--- | :--- |
 | **`data_parser.py`** | Script for processing the MovieLens data |
 | **`train.py`** | Trains the recommendation model |
-| **`train_parallel.py`** | A parallelised and JIT-optimised version of `train.py` (using Numba) |
+| **`train_parallel.py`** | A parallelized and JIT-optimized version of `train.py` (using Numba) |
 | **`train_with_genres_features.py`** | Trains with movie genres embeddings added to the model |
 | **`train_final_model.py`** | Trains the deployed model on the entire data available |
 | **`make_recommendation.py`** | Makes recommendations for a given user |
