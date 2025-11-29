@@ -40,7 +40,10 @@ cd movie-recommender-system
 pip install -r requirements.txt
 ```
 
-### 3. Run the Streamlit App Locally
+### 3. Add your TMDB API key
+Create folder named **`.streamlit`** and add the **`secrets.toml`** file containing your TMDB API key in this folder.
+
+### 4. Run the Streamlit App Locally
 ```bash
 streamlit run app.py
 ```
